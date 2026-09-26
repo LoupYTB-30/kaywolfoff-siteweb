@@ -69,6 +69,12 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 .lang-btn{position:fixed;top:16px;right:16px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #30363d;background:#161b22;color:#e6edf3;z-index:999}
 .lang-btn:hover{background:#21262d}
 @media(max-width:600px){.layout{grid-template-columns:1fr}}
+.log-entry{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px}
+.log-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.log-content{flex:1}
+.log-action{font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:2px}
+.log-meta{font-size:11px;color:#8b949e}
+.log-detail{font-size:12px;color:#8b949e;margin-top:4px;font-style:italic}
 </style>
 </head>
 <body>
@@ -162,6 +168,12 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
       <span class="admin-badge">STAFF</span>
       <button class="btn sm danger" style="margin-left:auto" onclick="logoutAdmin()">Déconnexion</button>
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn sm" onclick="switchAdminTab('tickets')" id="atab-tickets" style="background:#238636;border-color:#2ea043;color:#fff">🎫 Tickets</button>
+      <button class="btn sm" onclick="switchAdminTab('logs')" id="atab-logs">📋 Logs</button>
+    </div>
+
+    <div id="admin-tickets-section">
     <div class="filters">
       <button class="filter-btn active" onclick="setAdminFilter('all',this)">Tous</button>
       <button class="filter-btn" onclick="setAdminFilter('open',this)">Ouverts</button>
@@ -178,22 +190,62 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
         <div id="admin-ticket-detail"><div class="empty">Sélectionne un ticket</div></div>
       </div>
     </div>
+    </div><!-- fin admin-tickets-section -->
+
+    <div id="admin-logs-section" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title">Historique des actions</div>
+        <button class="btn sm" onclick="loadLogs()">🔄 Actualiser</button>
+      </div>
+      <div id="logs-list"><div class="loading">⏳ Chargement...</div></div>
+    </div>
+
   </div>
 </div>
 
 <script>
 const WH="https://discord.com/api/webhooks/1520805025750716507/Avd7bNjbGNa1GSpMf51znVPEHMo8HVHII-bZUcafi_YqU9-X1OVu-B5LTx8SSA6kpSDo";
 const WH_REPLY="https://discord.com/api/webhooks/1521086023487193159/VtbcLhraaqtOvzPiSLsjvlsaiJLUi1oBJDv2TWuEOYHD_8tHihUF87FORM5620g6bdCZ";
-const GS="https://script.google.com/macros/s/AKfycbzSDv5-xovStfLxm-aCuRvzKP3MUjASfEINo3mwZh7EB2KdRK2Q3OuT-J3Rac-MSzOGDw/exec";
+const GS="https://script.google.com/macros/s/AKfycbwvukeMFTU8RaAKC0-V1I7c5i6PZX3Pbc9sluVnPN6kLrfk-NifimGeWd33ZuARdqjStA/exec";
 const ADMIN_PASSWORD="kaywolfoff2026";
-let tickets=[],filter="all",adminFilter="all",selectedId=null,adminSelectedId=null,isAdmin=false,adminPseudo="";
 
-function formatDate(d){
-  if(!d)return"";
-  if(String(d).includes("T")){const dt=new Date(d);return dt.toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
-  return String(d);
+function switchAdminTab(tab) {
+  document.getElementById("admin-tickets-section").style.display = tab==="tickets" ? "block" : "none";
+  document.getElementById("admin-logs-section").style.display = tab==="logs" ? "block" : "none";
+  document.getElementById("atab-tickets").style.cssText = tab==="tickets" ? "background:#238636;border-color:#2ea043;color:#fff" : "";
+  document.getElementById("atab-logs").style.cssText = tab==="logs" ? "background:#238636;border-color:#2ea043;color:#fff" : "";
+  if(tab==="logs") loadLogs();
 }
 
+async function addLog(action, ticketId, detail) {
+  const now = new Date().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  const url = GS+"?action=addLog&staff="+encodeURIComponent(adminPseudo)+"&logAction="+encodeURIComponent(action)+"&ticketId="+encodeURIComponent(ticketId)+"&detail="+encodeURIComponent(detail)+"&date="+encodeURIComponent(now);
+  try { await fetch(url); } catch(e) { console.error(e); }
+}
+
+async function loadLogs() {
+  const el = document.getElementById("logs-list");
+  el.innerHTML = '<div class="loading">Chargement...</div>';
+  try {
+    const r = await fetch(GS+"?action=getLogs");
+    const data = await r.json();
+    if(!data.length) { el.innerHTML='<div class="empty">Aucun log pour linstant.</div>'; return; }
+    const icons = { reply:"💬", update:"🔄", assign:"👤", delete:"🗑️", add:"🎫" };
+    const labels = { reply:"Réponse ajoutée", update:"Statut modifié", assign:"Ticket assigné", delete:"Ticket supprimé", add:"Ticket créé" };
+    el.innerHTML = data.reverse().map(function(row) {
+      var date=row[0], staff=row[1], action=row[2], ticketId=row[3], detail=row[4]||"";
+      return '<div class="log-entry">'
+        +'<span class="log-icon">'+(icons[action]||"📋")+'</span>'
+        +'<div class="log-content">'
+        +'<div class="log-action">'+(labels[action]||action)+' &mdash; <span style="font-family:monospace;color:#58a6ff">'+ticketId+'</span></div>'
+        +'<div class="log-meta">👤 '+staff+' · 📅 '+date+'</div>'
+        +(detail?'<div class="log-detail">'+detail+'</div>':'')
+        +'</div></div>';
+    }).join("");
+  } catch(e) {
+    el.innerHTML = '<div class="empty">Erreur de chargement.</div>';
+  }
+}
 async function loadTickets(){
   try{
     const r=await fetch(GS+"?action=get");
@@ -207,7 +259,7 @@ async function loadTickets(){
     renderList();
     if(isAdmin)renderAdminList();
   }catch(e){
-    document.getElementById("ticket-list").innerHTML='<div class="empty">Aucun ticket pour l\'instant.</div>';
+    document.getElementById("ticket-list").innerHTML='<div class="empty">Aucun ticket.</div>';
   }
 }
 
@@ -316,6 +368,9 @@ function saveReply(id){
   fetch(GS+"?action=assign&id="+encodeURIComponent(id)+"&assignee="+encodeURIComponent(newAssignee));
   if(newReply)notifyReply(t,newReply);
   if(newStatus!==oldStatus)notifyStatus(t,oldStatus,newStatus);
+  if(newReply) addLog("reply", id, "Réponse: "+newReply.slice(0,60)+(newReply.length>60?"...":""));
+  if(newStatus!==oldStatus) addLog("update", id, statusLabel(oldStatus)+" → "+statusLabel(newStatus));
+  if(newAssignee&&newAssignee!==t.assignee) addLog("assign", id, "Assigné à: "+newAssignee);
   renderAdminList();selectAdminTicket(id);
 }
 
@@ -361,6 +416,8 @@ async function notifyStatus(t,oldStatus,newStatus){
 }
 
 function deleteTicket(id){
+  const td=tickets.find(x=>x.id===id);
+  addLog("delete", id, td?"Sujet: "+td.subject.slice(0,50):"");
   fetch(GS+"?action=delete&id="+encodeURIComponent(id));
   tickets=tickets.filter(x=>x.id!==id);
   adminSelectedId=null;selectedId=null;
@@ -413,6 +470,7 @@ function createTicket(){
   const t={id,name:"",discord,discordid,cat,subject,msg,prio,status:"open",date:now,reply:"",assignee:""};
   tickets.unshift(t);renderList();
   saveToSheets(t);sendToDiscord(t);
+  addLog("add", id, "Sujet: "+subject+" · Par: "+discord);
   document.getElementById("t-discord").value="";
   document.getElementById("t-discordid").value="";
   document.getElementById("t-subject").value="";
