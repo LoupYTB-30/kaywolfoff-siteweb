@@ -111,7 +111,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
       L'ID ressemble à : <strong>123456789012345678</strong>
     </div>
     <label>Tag Discord (pseudo)</label>
-    <input type="text" id="t-discord" placeholder="ex: LoupYTB_">
+    <input type="text" id="t-discord" placeholder="ex: NoxStudio">
     <label>ID Discord</label>
     <input type="text" id="t-discordid" placeholder="ex: 123456789012345678">
     <div class="hint">⚠️ Requis pour recevoir une vraie notification Discord</div>
@@ -148,7 +148,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 <div id="tab-admin" style="display:none">
   <div id="admin-login" style="max-width:300px">
     <label>Ton pseudo (staff)</label>
-    <input type="text" id="admin-name" placeholder="ex: LoupYTB_">
+    <input type="text" id="admin-name" placeholder="ex: NoxStudio">
     <label>Mot de passe admin</label>
     <input type="password" id="admin-pwd" placeholder="Mot de passe...">
     <button class="btn primary" onclick="checkAdmin()">🔓 Connexion</button>
@@ -196,7 +196,7 @@ function formatDate(d){
 
 async function loadTickets(){
   try{
-    const r=await fetch(GS);
+    const r=await fetch(GS+"?action=get");
     const data=await r.json();
     tickets=data.filter(row=>row[0]).map(row=>({
       id:row[0],date:formatDate(row[1]),name:row[2]||"",cat:row[3],
@@ -311,9 +311,9 @@ function saveReply(id){
   const newAssignee=document.getElementById("admin-assignee").value;
   const oldStatus=t.status;
   t.reply=newReply;t.status=newStatus;t.assignee=newAssignee;
-  fetch(GS,{method:"POST",body:JSON.stringify({action:"reply",id:id,reply:newReply})});
-  fetch(GS,{method:"POST",body:JSON.stringify({action:"update",id:id,status:newStatus})});
-  fetch(GS,{method:"POST",body:JSON.stringify({action:"assign",id:id,assignee:newAssignee})});
+  fetch(GS+"?action=reply&id="+encodeURIComponent(id)+"&reply="+encodeURIComponent(newReply));
+  fetch(GS+"?action=update&id="+encodeURIComponent(id)+"&status="+encodeURIComponent(newStatus));
+  fetch(GS+"?action=assign&id="+encodeURIComponent(id)+"&assignee="+encodeURIComponent(newAssignee));
   if(newReply)notifyReply(t,newReply);
   if(newStatus!==oldStatus)notifyStatus(t,oldStatus,newStatus);
   renderAdminList();selectAdminTicket(id);
@@ -351,7 +351,7 @@ async function notifyStatus(t,oldStatus,newStatus){
         {name:"Sujet",value:t.subject},
         {name:"Ancien statut",value:statusIcon(oldStatus)+" "+statusLabel(oldStatus),inline:true},
         {name:"Nouveau statut",value:statusIcon(newStatus)+" "+statusLabel(newStatus),inline:true},
-        {name:"Pris en charge par",value:"👤 "+(t.assignee||"Équipe NexoStudio"),inline:true}
+        {name:"Pris en charge par",value:"👤 "+(t.assignee||"Équipe NoxStudio"),inline:true}
       ],
       footer:{text:"Support NoxStudio — onglet 🔍 Suivre mon ticket avec l'ID "+t.id}
     }]
@@ -361,7 +361,7 @@ async function notifyStatus(t,oldStatus,newStatus){
 }
 
 function deleteTicket(id){
-  fetch(GS,{method:"POST",body:JSON.stringify({action:"delete",id:id})});
+  fetch(GS+"?action=delete&id="+encodeURIComponent(id));
   tickets=tickets.filter(x=>x.id!==id);
   adminSelectedId=null;selectedId=null;
   document.getElementById("admin-ticket-detail").innerHTML='<div class="empty">Sélectionne un ticket</div>';
@@ -425,8 +425,10 @@ function createTicket(){
 }
 
 async function saveToSheets(t){
-  try{await fetch(GS,{method:"POST",body:JSON.stringify({action:"add",id:t.id,date:t.date,name:t.name,cat:t.cat,subject:t.subject,prio:t.prio,msg:t.msg,status:t.status,discord:t.discord,discordid:t.discordid,assignee:""})});}
-  catch(e){console.error(e);}
+  try{
+    const url = GS+"?action=add&id="+encodeURIComponent(t.id)+"&date="+encodeURIComponent(t.date)+"&name=&cat="+encodeURIComponent(t.cat)+"&subject="+encodeURIComponent(t.subject)+"&prio="+encodeURIComponent(t.prio)+"&msg="+encodeURIComponent(t.msg)+"&status=open&discord="+encodeURIComponent(t.discord)+"&discordid="+encodeURIComponent(t.discordid)+"&assignee=";
+    await fetch(url);
+  }catch(e){console.error(e);}
 }
 
 async function sendToDiscord(t){
@@ -469,7 +471,7 @@ const translations={
     guide_step3:"L'ID ressemble à : <strong>123456789012345678</strong>",
     suivre_hint:"Entre ton ID de ticket pour voir son statut et la réponse de l'équipe.",
     suivre_placeholder:"Ex: TKT-123456",suivre_btn:"Rechercher",suivre_notfound:"❌ Ticket introuvable.",
-    admin_name_label:"Ton pseudo (staff)",admin_name_ph:"ex: LoupYTB_",
+    admin_name_label:"Ton pseudo (staff)",admin_name_ph:"ex: NoxStudio",
     admin_pwd_label:"Mot de passe admin",admin_pwd_ph:"Mot de passe...",
     admin_login_btn:"🔓 Connexion",admin_pwd_error:"Mot de passe incorrect ou pseudo manquant.",
     admin_mode:"Mode admin activé —",admin_badge:"STAFF",admin_logout:"Déconnexion",
@@ -480,7 +482,7 @@ const translations={
     reply_team:"💬 Réponse de l'équipe",assigned_by:"Pris en charge par",
     notif_created:"✅ Ticket créé ! Ton ID : {id} — note-le pour suivre ta demande dans l'onglet 🔍",
     loading:"⏳ Chargement...",no_ticket:"Aucun ticket.",
-    discord_tag_ph:"ex: LoupYTB_",discord_id_ph:"ex: 123456789012345678",
+    discord_tag_ph:"ex: NoxStudio",discord_id_ph:"ex: 123456789012345678",
     subject_ph:"Résume ton problème",msg_ph:"Explique en détail...",assignee_ph:"Pseudo du staff qui prend en charge"
   },
   en:{
@@ -500,7 +502,7 @@ const translations={
     guide_step3:"The ID looks like: <strong>123456789012345678</strong>",
     suivre_hint:"Enter your ticket ID to see its status and the team's reply.",
     suivre_placeholder:"Ex: TKT-123456",suivre_btn:"Search",suivre_notfound:"❌ Ticket not found.",
-    admin_name_label:"Your username (staff)",admin_name_ph:"ex: LoupYTB_",
+    admin_name_label:"Your username (staff)",admin_name_ph:"ex: NoxStudio",
     admin_pwd_label:"Admin password",admin_pwd_ph:"Password...",
     admin_login_btn:"🔓 Login",admin_pwd_error:"Wrong password or missing username.",
     admin_mode:"Admin mode active —",admin_badge:"STAFF",admin_logout:"Logout",
@@ -511,7 +513,7 @@ const translations={
     reply_team:"💬 Team reply",assigned_by:"Handled by",
     notif_created:"✅ Ticket created! Your ID: {id} — save it to track your request in the 🔍 tab",
     loading:"⏳ Loading...",no_ticket:"No tickets.",
-    discord_tag_ph:"ex: LoupYTB_",discord_id_ph:"ex: 123456789012345678",
+    discord_tag_ph:"ex: NoxStudio",discord_id_ph:"ex: 123456789012345678",
     subject_ph:"Summarize your issue",msg_ph:"Explain in detail...",assignee_ph:"Staff username handling this ticket"
   }
 };
