@@ -208,6 +208,7 @@ const WH="https://discord.com/api/webhooks/1520805025750716507/Avd7bNjbGNa1GSpMf
 const WH_REPLY="https://discord.com/api/webhooks/1521086023487193159/VtbcLhraaqtOvzPiSLsjvlsaiJLUi1oBJDv2TWuEOYHD_8tHihUF87FORM5620g6bdCZ";
 const GS="https://script.google.com/macros/s/AKfycbwvukeMFTU8RaAKC0-V1I7c5i6PZX3Pbc9sluVnPN6kLrfk-NifimGeWd33ZuARdqjStA/exec";
 const ADMIN_PASSWORD="kaywolfoff2026";
+let tickets=[],filter="all",adminFilter="all",selectedId=null,adminSelectedId=null,isAdmin=false,adminPseudo="";
 
 function switchAdminTab(tab) {
   document.getElementById("admin-tickets-section").style.display = tab==="tickets" ? "block" : "none";
