@@ -190,7 +190,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
         <div id="admin-ticket-detail"><div class="empty">Sélectionne un ticket</div></div>
       </div>
     </div>
-    </div><!-- fin admin-tickets-section -->
+    </div>
 
     <div id="admin-logs-section" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -206,9 +206,14 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 <script>
 const WH="https://discord.com/api/webhooks/1520805025750716507/Avd7bNjbGNa1GSpMf51znVPEHMo8HVHII-bZUcafi_YqU9-X1OVu-B5LTx8SSA6kpSDo";
 const WH_REPLY="https://discord.com/api/webhooks/1521086023487193159/VtbcLhraaqtOvzPiSLsjvlsaiJLUi1oBJDv2TWuEOYHD_8tHihUF87FORM5620g6bdCZ";
-const GS="https://script.google.com/macros/s/AKfycbxd0c0Gj3nk2lx2mybNynJfzcvqyjAMQpdZcOfwmispwOsLUXGMtg7iNZUKCzEIshxwTg/exec";
+const GS="https://script.google.com/macros/s/AKfycbzc-X89dNMzjcm3A5-UTxnD_7Mim8oCyY8tJ9HzMrxD0iQaWgCMA89vS-fk9HsQdqVcSw/exec";
 const ADMIN_PASSWORD="kaywolfoff2026";
 let tickets=[],filter="all",adminFilter="all",selectedId=null,adminSelectedId=null,isAdmin=false,adminPseudo="";
+
+function formatDate(d){
+  if(!d) return "";
+  return new Date(d).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
 
 function switchAdminTab(tab) {
   document.getElementById("admin-tickets-section").style.display = tab==="tickets" ? "block" : "none";
@@ -221,7 +226,7 @@ function switchAdminTab(tab) {
 async function addLog(action, ticketId, detail) {
   const now = new Date().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   const url = GS+"?action=addLog&staff="+encodeURIComponent(adminPseudo)+"&logAction="+encodeURIComponent(action)+"&ticketId="+encodeURIComponent(ticketId)+"&detail="+encodeURIComponent(detail)+"&date="+encodeURIComponent(now);
-  try { await fetch(url); } catch(e) { console.error(e); }
+  try { await fetch(url, { mode: 'no-cors' }); } catch(e) { console.error(e); }
 }
 
 async function loadLogs() {
@@ -230,7 +235,7 @@ async function loadLogs() {
   try {
     const r = await fetch(GS+"?action=getLogs");
     const data = await r.json();
-    if(!data.length) { el.innerHTML='<div class="empty">Aucun log pour linstant.</div>'; return; }
+    if(!data.length) { el.innerHTML='<div class="empty">Aucun log pour l\'instant.</div>'; return; }
     const icons = { reply:"💬", update:"🔄", assign:"👤", delete:"🗑️", add:"🎫" };
     const labels = { reply:"Réponse ajoutée", update:"Statut modifié", assign:"Ticket assigné", delete:"Ticket supprimé", add:"Ticket créé" };
     el.innerHTML = data.reverse().map(function(row) {
@@ -247,6 +252,7 @@ async function loadLogs() {
     el.innerHTML = '<div class="empty">Erreur de chargement.</div>';
   }
 }
+
 async function loadTickets(){
   try{
     const r=await fetch(GS+"?action=get");
@@ -364,9 +370,9 @@ function saveReply(id){
   const newAssignee=document.getElementById("admin-assignee").value;
   const oldStatus=t.status;
   t.reply=newReply;t.status=newStatus;t.assignee=newAssignee;
-  fetch(GS+"?action=reply&id="+encodeURIComponent(id)+"&reply="+encodeURIComponent(newReply));
-  fetch(GS+"?action=update&id="+encodeURIComponent(id)+"&status="+encodeURIComponent(newStatus));
-  fetch(GS+"?action=assign&id="+encodeURIComponent(id)+"&assignee="+encodeURIComponent(newAssignee));
+  fetch(GS+"?action=reply&id="+encodeURIComponent(id)+"&reply="+encodeURIComponent(newReply), { mode: 'no-cors' });
+  fetch(GS+"?action=update&id="+encodeURIComponent(id)+"&status="+encodeURIComponent(newStatus), { mode: 'no-cors' });
+  fetch(GS+"?action=assign&id="+encodeURIComponent(id)+"&assignee="+encodeURIComponent(newAssignee), { mode: 'no-cors' });
   if(newReply)notifyReply(t,newReply);
   if(newStatus!==oldStatus)notifyStatus(t,oldStatus,newStatus);
   if(newReply) addLog("reply", id, "Réponse: "+newReply.slice(0,60)+(newReply.length>60?"...":""));
@@ -419,7 +425,7 @@ async function notifyStatus(t,oldStatus,newStatus){
 function deleteTicket(id){
   const td=tickets.find(x=>x.id===id);
   addLog("delete", id, td?"Sujet: "+td.subject.slice(0,50):"");
-  fetch(GS+"?action=delete&id="+encodeURIComponent(id));
+  fetch(GS+"?action=delete&id="+encodeURIComponent(id), { mode: 'no-cors' });
   tickets=tickets.filter(x=>x.id!==id);
   adminSelectedId=null;selectedId=null;
   document.getElementById("admin-ticket-detail").innerHTML='<div class="empty">Sélectionne un ticket</div>';
@@ -486,7 +492,7 @@ function createTicket(){
 async function saveToSheets(t){
   try{
     const url = GS+"?action=add&id="+encodeURIComponent(t.id)+"&date="+encodeURIComponent(t.date)+"&name=&cat="+encodeURIComponent(t.cat)+"&subject="+encodeURIComponent(t.subject)+"&prio="+encodeURIComponent(t.prio)+"&msg="+encodeURIComponent(t.msg)+"&status=open&discord="+encodeURIComponent(t.discord)+"&discordid="+encodeURIComponent(t.discordid)+"&assignee=";
-    await fetch(url);
+    await fetch(url, { mode: 'no-cors' });
   }catch(e){console.error(e);}
 }
 
@@ -567,7 +573,7 @@ const translations={
     admin_mode:"Admin mode active —",admin_badge:"STAFF",admin_logout:"Logout",
     admin_assignee:"👤 Assigned to",admin_status:"🔄 Status",admin_reply_label:"✏️ Reply",
     admin_reply_ph:"Write your reply here...",admin_save:"💾 Save + Notify",admin_delete:"🗑 Delete",
-    status_open:"🔵 Open",status_progress:"🟡 In progress",status_closed:"🟢 Closed",
+    status_open:"🔵 Open",status_progress:"🟡 In progress",status_closed:"Closed",
     waiting_reply:"Waiting for the team's reply...",reply_current:"💬 Current reply",
     reply_team:"💬 Team reply",assigned_by:"Handled by",
     notif_created:"✅ Ticket created! Your ID: {id} — save it to track your request in the 🔍 tab",
