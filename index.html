@@ -320,4 +320,326 @@ function prioClass(p){return{Haute:"prio-high",Moyenne:"prio-med",Faible:"prio-l
 function prioLabel(p){return{Haute:tr("prio_high"),Moyenne:tr("prio_med"),Faible:tr("prio_low")}[p]||p}
 
 // ====== LOGS ======
-async
+async function addLog(action,ticketId,detail,staff){
+  return gs({action:"addLog",staff:staff||adminPseudo,logAction:action,ticketId:ticketId,detail:detail||"",date:nowStr()});
+}
+
+async function loadLogs(){
+  const el=document.getElementById("logs-list");
+  el.innerHTML='<div class="loading">'+tr("loading")+'</div>';
+  try{
+    const r=await fetch(GS+"?action=getLogs");
+    const data=await r.json();
+    if(!Array.isArray(data)||!data.length){ el.innerHTML='<div class="empty">'+tr("no_log")+'</div>'; return; }
+    const icons={reply:"💬",update:"🔄",assign:"👤",delete:"🗑️",add:"🎫"};
+    el.innerHTML=data.slice().reverse().map(function(row){
+      const date=row[0],staff=row[1],action=row[2],ticketId=row[3],detail=row[4]||"";
+      return '<div class="log-entry">'
+        +'<span class="log-icon">'+(icons[action]||"📋")+'</span>'
+        +'<div class="log-content">'
+        +'<div class="log-action">'+esc(TR[lang]["log_"+action]||action)+' &mdash; <span style="font-family:monospace;color:#58a6ff">'+esc(ticketId)+'</span></div>'
+        +'<div class="log-meta">👤 '+esc(staff)+' · 📅 '+esc(date)+'</div>'
+        +(detail?'<div class="log-detail">'+esc(detail)+'</div>':'')
+        +'</div></div>';
+    }).join("");
+  }catch(e){
+    console.error(e);
+    el.innerHTML='<div class="empty">'+tr("log_error")+'</div>';
+  }
+}
+
+function switchAdminTab(tab){
+  document.getElementById("admin-tickets-section").style.display=tab==="tickets"?"block":"none";
+  document.getElementById("admin-logs-section").style.display=tab==="logs"?"block":"none";
+  document.getElementById("atab-tickets").style.cssText=tab==="tickets"?"background:#238636;border-color:#2ea043;color:#fff":"";
+  document.getElementById("atab-logs").style.cssText=tab==="logs"?"background:#238636;border-color:#2ea043;color:#fff":"";
+  if(tab==="logs") loadLogs();
+}
+
+// ====== TICKETS ======
+async function loadTickets(){
+  try{
+    const r=await fetch(GS+"?action=get");
+    const data=await r.json();
+    if(!Array.isArray(data)) throw new Error("Réponse inattendue");
+    tickets=data.filter(row=>row[0]).map(row=>({
+      id:String(row[0]),date:formatDate(row[1]),name:row[2]||"",cat:row[3],
+      subject:row[4],prio:row[5],msg:row[6],status:row[7]||"open",
+      reply:row[8]||"",discord:row[9]||"",discordid:String(row[10]||""),
+      assignee:row[11]||""
+    })).reverse();
+    renderList();
+    if(isAdmin) renderAdminList();
+  }catch(e){
+    console.error(e);
+    document.getElementById("ticket-list").innerHTML='<div class="empty">'+tr("no_ticket")+'</div>';
+  }
+}
+
+function switchTab(t){
+  ["tickets","new","suivre","admin"].forEach(k=>document.getElementById("tab-"+k).style.display=k===t?"block":"none");
+  document.querySelectorAll(".tab").forEach((el,i)=>el.classList.toggle("active",["tickets","new","suivre","admin"][i]===t));
+  if(t==="tickets") loadTickets();
+}
+
+function setFilter(f,el){filter=f;document.querySelectorAll("#tab-tickets .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");renderList();}
+function setAdminFilter(f,el){adminFilter=f;document.querySelectorAll("#admin-tickets-section .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");renderAdminList();}
+
+function ticketCard(t,sel,fn){
+  return '<div class="ticket'+(sel===t.id?" selected":"")+'" data-id="'+esc(t.id)+'" onclick="'+fn+'(this.dataset.id)">'
+    +'<div class="ticket-header"><span class="ticket-id">'+esc(t.id)+'</span><span class="pill '+esc(t.status)+'">'+esc(statusLabel(t.status))+'</span></div>'
+    +'<div class="ticket-title">'+esc(t.subject)+'</div>'
+    +'<div class="ticket-meta" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">@'+esc(t.discord)+' · '+esc(t.cat)+' · <span class="pill '+prioClass(t.prio)+'">'+esc(prioLabel(t.prio))+'</span>'
+    +(t.assignee?'<span class="assigned">👤 '+esc(t.assignee)+'</span>':'')
+    +'</div></div>';
+}
+
+function ticketDetailHTML(t){
+  return '<div class="detail">'
+    +'<div class="ticket-id" style="margin-bottom:6px">'+esc(t.id)+' · '+esc(t.date)+'</div>'
+    +'<div class="detail-title">'+esc(t.subject)+'</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center">'
+    +'<span class="pill '+esc(t.status)+'">'+esc(statusLabel(t.status))+'</span>'
+    +'<span class="pill '+prioClass(t.prio)+'">'+esc(prioLabel(t.prio))+'</span>'
+    +'<span style="font-size:12px;color:#8b949e">'+esc(t.cat)+'</span>'
+    +(t.assignee?'<span class="assigned">👤 '+esc(t.assignee)+'</span>':'')
+    +'</div>'
+    +'<div style="font-size:12px;color:#5865f2;margin-bottom:8px">@'+esc(t.discord)+'</div>'
+    +'<div class="detail-body">'+esc(t.msg)+'</div>'
+    +(t.reply
+      ?'<div class="reply-box"><div class="reply-label">'+tr("reply_team")+'</div><div class="reply-text">'+esc(t.reply)+'</div></div>'
+      :'<div style="font-size:12px;color:#8b949e;margin-top:10px;font-style:italic">'+tr("waiting")+'</div>')
+    +'</div>';
+}
+
+function renderList(){
+  const list=tickets.filter(t=>filter==="all"||t.status===filter);
+  document.getElementById("open-count").textContent=tickets.filter(t=>t.status==="open").length;
+  const el=document.getElementById("ticket-list");
+  if(!list.length){el.innerHTML='<div class="empty">'+tr("no_ticket")+'</div>';return;}
+  el.innerHTML=list.map(t=>ticketCard(t,selectedId,"selectTicket")).join("");
+}
+
+function renderAdminList(){
+  const list=tickets.filter(t=>adminFilter==="all"||t.status===adminFilter);
+  const el=document.getElementById("admin-ticket-list");
+  if(!list.length){el.innerHTML='<div class="empty">'+tr("no_ticket")+'</div>';return;}
+  el.innerHTML=list.map(t=>ticketCard(t,adminSelectedId,"selectAdminTicket")).join("");
+}
+
+function selectTicket(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  selectedId=id;renderList();
+  document.getElementById("ticket-detail").innerHTML=ticketDetailHTML(t);
+}
+
+function selectAdminTicket(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  adminSelectedId=id;
+  renderAdminList();
+  document.getElementById("admin-ticket-detail").innerHTML='<div class="detail">'
+    +'<div class="ticket-id" style="margin-bottom:6px">'+esc(t.id)+' · '+esc(t.date)+'</div>'
+    +'<div class="detail-title">'+esc(t.subject)+'</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center">'
+    +'<span class="pill '+esc(t.status)+'">'+esc(statusLabel(t.status))+'</span>'
+    +'<span class="pill '+prioClass(t.prio)+'">'+esc(prioLabel(t.prio))+'</span>'
+    +'<span style="font-size:12px;color:#8b949e">'+esc(t.cat)+'</span>'
+    +(t.assignee?'<span class="assigned">👤 '+esc(t.assignee)+'</span>':'')
+    +'</div>'
+    +'<div style="font-size:12px;color:#5865f2;margin-bottom:4px">@'+esc(t.discord)+'</div>'
+    +(t.discordid?'<div style="font-size:11px;color:#8b949e;margin-bottom:8px;font-family:monospace">ID: '+esc(t.discordid)+'</div>':'')
+    +'<div class="detail-body">'+esc(t.msg)+'</div>'
+    +(t.reply?'<div class="reply-box"><div class="reply-label">'+tr("reply_current")+'</div><div class="reply-text">'+esc(t.reply)+'</div></div>':'')
+    +'<div class="reply-input-box">'
+    +'<label>'+tr("lbl_assignee")+'</label>'
+    +'<input id="admin-assignee" type="text" value="'+esc(t.assignee||adminPseudo)+'" placeholder="'+esc(tr("ph_assignee"))+'" style="margin-bottom:8px">'
+    +'<label>'+tr("lbl_status")+'</label>'
+    +'<select id="admin-status-sel" style="margin-bottom:8px">'
+    +'<option value="open"'+(t.status==="open"?" selected":"")+'>'+tr("opt_open")+'</option>'
+    +'<option value="in_progress"'+(t.status==="in_progress"?" selected":"")+'>'+tr("opt_progress")+'</option>'
+    +'<option value="closed"'+(t.status==="closed"?" selected":"")+'>'+tr("opt_closed")+'</option>'
+    +'</select>'
+    +'<label>'+tr("lbl_reply")+'</label>'
+    +'<textarea id="admin-reply-txt" placeholder="'+esc(tr("ph_reply"))+'">'+esc(t.reply)+'</textarea>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px">'
+    +'<button class="btn sm primary" data-id="'+esc(t.id)+'" onclick="saveReply(this.dataset.id)">'+tr("save")+'</button>'
+    +'<button class="btn sm danger" data-id="'+esc(t.id)+'" onclick="deleteTicket(this.dataset.id)">'+tr("del")+'</button>'
+    +'</div></div></div>';
+}
+
+async function saveReply(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  const newReply=document.getElementById("admin-reply-txt").value;
+  const newStatus=document.getElementById("admin-status-sel").value;
+  const newAssignee=document.getElementById("admin-assignee").value.trim();
+
+  // On garde les anciennes valeurs AVANT de les écraser (corrige le bug du log d'assignation)
+  const oldReply=t.reply, oldStatus=t.status, oldAssignee=t.assignee;
+  t.reply=newReply; t.status=newStatus; t.assignee=newAssignee;
+
+  // Mise à jour de l'affichage tout de suite
+  renderAdminList(); renderList(); selectAdminTicket(id);
+
+  // Écritures dans Google Sheets (l'une après l'autre pour éviter les conflits)
+  await gs({action:"reply",id:id,reply:newReply});
+  await gs({action:"update",id:id,status:newStatus});
+  await gs({action:"assign",id:id,assignee:newAssignee});
+
+  // Notifications Discord (seulement si quelque chose a changé)
+  if(newReply && newReply!==oldReply) notifyReply(t,newReply);
+  if(newStatus!==oldStatus) notifyStatus(t,oldStatus,newStatus);
+
+  // Logs
+  if(newReply!==oldReply) await addLog("reply",id,"Réponse: "+newReply.slice(0,60)+(newReply.length>60?"...":""));
+  if(newStatus!==oldStatus) await addLog("update",id,TR.fr["status_"+oldStatus]+" → "+TR.fr["status_"+newStatus]);
+  if(newAssignee!==oldAssignee) await addLog("assign",id,"Assigné à: "+(newAssignee||"—"));
+}
+
+async function postWebhook(url,payload){
+  try{
+    await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  }catch(e){ console.error("Webhook error",e); }
+}
+
+async function notifyReply(t,reply){
+  const mention=t.discordid?"<@"+t.discordid+">":"@"+t.discord;
+  await postWebhook(WH_REPLY,{
+    content:mention+" — 💬 L'équipe a répondu à ton ticket !",
+    embeds:[{
+      title:"💬 Réponse à ton ticket — "+t.id,
+      color:3447003,
+      fields:[
+        {name:"Sujet",value:cut(t.subject,1000)||"—"},
+        {name:"Réponse de l'équipe",value:cut(reply,1000)},
+        {name:"Statut",value:statusIcon(t.status)+" "+TR.fr["status_"+t.status],inline:true},
+        {name:"Pris en charge par",value:"👤 "+(t.assignee||"Équipe NoxStudio"),inline:true}
+      ],
+      footer:{text:"Support NoxStudio — onglet 🔍 Suivre mon ticket avec l'ID "+t.id}
+    }]
+  });
+}
+
+async function notifyStatus(t,oldStatus,newStatus){
+  const mention=t.discordid?"<@"+t.discordid+">":"@"+t.discord;
+  const colors={open:3447003,in_progress:16776960,closed:3066993};
+  await postWebhook(WH_REPLY,{
+    content:mention+" — 🔔 Le statut de ton ticket a changé !",
+    embeds:[{
+      title:"🔔 Mise à jour du ticket — "+t.id,
+      color:colors[newStatus]||3447003,
+      fields:[
+        {name:"Sujet",value:cut(t.subject,1000)||"—"},
+        {name:"Ancien statut",value:statusIcon(oldStatus)+" "+TR.fr["status_"+oldStatus],inline:true},
+        {name:"Nouveau statut",value:statusIcon(newStatus)+" "+TR.fr["status_"+newStatus],inline:true},
+        {name:"Pris en charge par",value:"👤 "+(t.assignee||"Équipe NoxStudio"),inline:true}
+      ],
+      footer:{text:"Support NoxStudio — onglet 🔍 Suivre mon ticket avec l'ID "+t.id}
+    }]
+  });
+}
+
+async function deleteTicket(id){
+  if(!confirm(tr("confirm_delete"))) return;
+  const td=tickets.find(x=>x.id===id);
+  tickets=tickets.filter(x=>x.id!==id);
+  adminSelectedId=null;selectedId=null;
+  document.getElementById("admin-ticket-detail").innerHTML='<div class="empty">'+tr("select_ticket")+'</div>';
+  document.getElementById("ticket-detail").innerHTML='<div class="empty">'+tr("select_ticket")+'</div>';
+  renderAdminList();renderList();
+  await addLog("delete",id,td?"Sujet: "+td.subject.slice(0,50):"");
+  await gs({action:"delete",id:id});
+}
+
+function searchTicket(){
+  const sid=document.getElementById("search-id").value.trim().toUpperCase();
+  const t=tickets.find(x=>x.id.toUpperCase()===sid);
+  const el=document.getElementById("search-result");
+  if(!t){el.innerHTML='<div style="color:#f85149;font-size:14px;margin-top:10px">'+tr("not_found")+'</div>';return;}
+  el.innerHTML=ticketDetailHTML(t);
+}
+
+// ====== ADMIN ======
+function checkAdmin(){
+  const pwd=document.getElementById("admin-pwd").value;
+  const name=document.getElementById("admin-name").value.trim();
+  if(pwd===ADMIN_PASSWORD&&name){
+    isAdmin=true;adminPseudo=name;
+    document.getElementById("admin-login").style.display="none";
+    document.getElementById("admin-panel").style.display="block";
+    document.getElementById("pwd-error").style.display="none";
+    document.getElementById("admin-name-display").textContent=name;
+    loadTickets();
+  }else{document.getElementById("pwd-error").style.display="block";}
+}
+
+function logoutAdmin(){
+  isAdmin=false;adminPseudo="";adminSelectedId=null;
+  document.getElementById("admin-login").style.display="block";
+  document.getElementById("admin-panel").style.display="none";
+  document.getElementById("admin-pwd").value="";
+  document.getElementById("admin-name").value="";
+}
+
+// ====== CRÉATION D'UN TICKET ======
+async function createTicket(){
+  const discord=document.getElementById("t-discord").value.trim();
+  const discordid=document.getElementById("t-discordid").value.trim();
+  const subject=document.getElementById("t-subject").value.trim();
+  const msg=document.getElementById("t-msg").value.trim();
+  const cat=document.getElementById("t-cat").value;
+  const prio=document.getElementById("t-prio").value;
+  const err=document.getElementById("form-error");
+  if(!discord||!discordid||!subject||!msg){err.style.display="block";return;}
+  err.style.display="none";
+  const id="TKT-"+String(Date.now()).slice(-6);
+  const now=nowStr();
+  const t={id,name:"",discord,discordid,cat,subject,msg,prio,status:"open",date:now,reply:"",assignee:""};
+  tickets.unshift(t);renderList();
+
+  document.getElementById("t-discord").value="";
+  document.getElementById("t-discordid").value="";
+  document.getElementById("t-subject").value="";
+  document.getElementById("t-msg").value="";
+  switchTab("tickets");
+  const n=document.getElementById("notif-created");
+  n.innerHTML=tr("created").replace("{id}",esc(id));
+  n.classList.add("show");
+  setTimeout(()=>n.classList.remove("show"),10000);
+
+  // Envoi en arrière-plan : Sheets d'abord, puis log, puis Discord
+  await saveToSheets(t);
+  await addLog("add",id,"Sujet: "+subject.slice(0,60)+" · Par: "+discord,discord);
+  sendToDiscord(t);
+}
+
+async function saveToSheets(t){
+  return gs({action:"add",id:t.id,date:t.date,name:"",cat:t.cat,subject:t.subject,prio:t.prio,msg:t.msg,status:"open",discord:t.discord,discordid:t.discordid,assignee:""});
+}
+
+async function sendToDiscord(t){
+  const colors={Haute:15158332,Moyenne:16776960,Faible:3447003};
+  await postWebhook(WH,{
+    content:"<@&1496526102544515159> — 🎫 Nouveau ticket à traiter !",
+    embeds:[{
+      title:"🎫 Nouveau ticket — "+t.id,
+      color:colors[t.prio]||3447003,
+      fields:[
+        {name:"Sujet",value:cut(t.subject,1000)},
+        {name:"Discord",value:cut("@"+t.discord+" ("+t.discordid+")",1000),inline:true},
+        {name:"Catégorie",value:t.cat,inline:true},
+        {name:"Priorité",value:t.prio,inline:true},
+        {name:"Message",value:cut(t.msg,1000)}
+      ],
+      footer:{text:"Ticket Support NoxStudio · "+t.date}
+    }]
+  });
+}
+
+// ====== DÉMARRAGE ======
+document.getElementById("admin-pwd").addEventListener("keydown",e=>{if(e.key==="Enter")checkAdmin();});
+document.getElementById("search-id").addEventListener("keydown",e=>{if(e.key==="Enter")searchTicket();});
+applyLang();
+loadTickets();
+</script>
+</body>
+</html>
