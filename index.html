@@ -44,7 +44,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .detail{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px}
 .detail-title{font-size:16px;font-weight:600;margin-bottom:8px}
-.detail-body{font-size:14px;color:#8b949e;line-height:1.6;margin:12px 0}
+.detail-body{font-size:14px;color:#8b949e;line-height:1.6;margin:12px 0;white-space:pre-wrap}
 .section-title{font-size:12px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
 .filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .filter-btn{padding:4px 12px;border:1px solid #30363d;border-radius:20px;font-size:12px;cursor:pointer;background:#161b22;color:#8b949e}
@@ -59,7 +59,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 .admin-badge{background:#5a3e1b;color:#d29922;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
 .reply-box{background:#0d2d6b22;border:1px solid #1f3a6e;border-radius:8px;padding:12px;margin-top:12px}
 .reply-box .reply-label{font-size:11px;color:#58a6ff;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.reply-box .reply-text{font-size:14px;color:#e6edf3;line-height:1.6}
+.reply-box .reply-text{font-size:14px;color:#e6edf3;line-height:1.6;white-space:pre-wrap}
 .reply-input-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px;margin-top:12px}
 .reply-input-box label{font-size:12px;color:#58a6ff;font-weight:600;margin-bottom:6px}
 .search-box{display:flex;gap:8px;margin-bottom:16px;max-width:400px}
@@ -80,72 +80,72 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 <body>
 <button class="lang-btn" id="lang-toggle" onclick="toggleLang()">🇬🇧 English</button>
 <h1>🎫 Support NoxStudio</h1>
-<p class="subtitle" id="txt-subtitle">Système de tickets — envoie ta demande, on te répond sur Discord</p>
+<p class="subtitle" data-i18n="subtitle"></p>
+
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('tickets')">Tickets <span class="badge" id="open-count">0</span></button>
-  <button class="tab" onclick="switchTab('new')">+ Nouveau ticket</button>
-  <button class="tab" onclick="switchTab('suivre')">🔍 Suivre mon ticket</button>
-  <button class="tab" onclick="switchTab('admin')">🔒 Admin</button>
+  <button class="tab active" onclick="switchTab('tickets')"><span data-i18n="tab_tickets"></span> <span class="badge" id="open-count">0</span></button>
+  <button class="tab" onclick="switchTab('new')" data-i18n="tab_new"></button>
+  <button class="tab" onclick="switchTab('suivre')" data-i18n="tab_follow"></button>
+  <button class="tab" onclick="switchTab('admin')" data-i18n="tab_admin"></button>
 </div>
 
 <div id="tab-tickets">
   <div class="notif success" id="notif-created"></div>
   <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('all',this)">Tous</button>
-    <button class="filter-btn" onclick="setFilter('open',this)">Ouverts</button>
-    <button class="filter-btn" onclick="setFilter('in_progress',this)">En cours</button>
-    <button class="filter-btn" onclick="setFilter('closed',this)">Fermés</button>
+    <button class="filter-btn active" onclick="setFilter('all',this)" data-i18n="f_all"></button>
+    <button class="filter-btn" onclick="setFilter('open',this)" data-i18n="f_open"></button>
+    <button class="filter-btn" onclick="setFilter('in_progress',this)" data-i18n="f_progress"></button>
+    <button class="filter-btn" onclick="setFilter('closed',this)" data-i18n="f_closed"></button>
   </div>
   <div class="layout">
     <div>
-      <div class="section-title">Liste</div>
-      <div class="ticket-list" id="ticket-list"><div class="loading">⏳ Chargement...</div></div>
+      <div class="section-title" data-i18n="list"></div>
+      <div class="ticket-list" id="ticket-list"><div class="loading" data-i18n="loading"></div></div>
     </div>
     <div>
-      <div class="section-title">Détail</div>
-      <div id="ticket-detail"><div class="empty">Sélectionne un ticket</div></div>
+      <div class="section-title" data-i18n="detail"></div>
+      <div id="ticket-detail"><div class="empty" data-i18n="select_ticket"></div></div>
     </div>
   </div>
 </div>
 
 <div id="tab-new" style="display:none">
   <div style="max-width:500px">
-    <div class="guide-box">
-      📋 <strong>Comment trouver ton ID Discord ?</strong><br>
-      1. Dans Discord → <strong>Paramètres → Avancé → Active le Mode développeur</strong><br>
-      2. Clic droit sur ton avatar → <strong>Copier l'identifiant</strong><br>
-      L'ID ressemble à : <strong>123456789012345678</strong>
-    </div>
-    <label>Tag Discord (pseudo)</label>
-    <input type="text" id="t-discord" placeholder="ex: NoxStudio">
-    <label>ID Discord</label>
-    <input type="text" id="t-discordid" placeholder="ex: 123456789012345678">
-    <div class="hint">⚠️ Requis pour recevoir une vraie notification Discord</div>
-    <label>Catégorie</label>
+    <div class="guide-box" data-i18n="guide"></div>
+    <label data-i18n="lbl_tag"></label>
+    <input type="text" id="t-discord" data-i18n-ph="ph_tag">
+    <label data-i18n="lbl_id"></label>
+    <input type="text" id="t-discordid" data-i18n-ph="ph_id">
+    <div class="hint" data-i18n="hint_id"></div>
+    <label data-i18n="lbl_cat"></label>
     <select id="t-cat">
-      <option>Support général</option>
-      <option>Bug / Problème</option>
-      <option>Demande de partenariat</option>
-      <option>Sanction / Appel</option>
-      <option>Autre</option>
+      <option value="Support général" data-i18n="cat1"></option>
+      <option value="Bug / Problème" data-i18n="cat2"></option>
+      <option value="Demande de partenariat" data-i18n="cat3"></option>
+      <option value="Sanction / Appel" data-i18n="cat4"></option>
+      <option value="Autre" data-i18n="cat5"></option>
     </select>
-    <label>Sujet</label>
-    <input type="text" id="t-subject" placeholder="Résume ton problème">
-    <label>Priorité</label>
-    <select id="t-prio"><option>Faible</option><option selected>Moyenne</option><option>Haute</option></select>
-    <label>Description</label>
-    <textarea id="t-msg" placeholder="Explique en détail..."></textarea>
-    <button class="btn primary" onclick="createTicket()">📨 Envoyer le ticket</button>
-    <div class="error" id="form-error">Remplis tous les champs.</div>
+    <label data-i18n="lbl_subject"></label>
+    <input type="text" id="t-subject" maxlength="150" data-i18n-ph="ph_subject">
+    <label data-i18n="lbl_prio"></label>
+    <select id="t-prio">
+      <option value="Faible" data-i18n="prio_low"></option>
+      <option value="Moyenne" data-i18n="prio_med" selected></option>
+      <option value="Haute" data-i18n="prio_high"></option>
+    </select>
+    <label data-i18n="lbl_msg"></label>
+    <textarea id="t-msg" maxlength="1500" data-i18n-ph="ph_msg"></textarea>
+    <button class="btn primary" onclick="createTicket()" data-i18n="send"></button>
+    <div class="error" id="form-error" data-i18n="form_error"></div>
   </div>
 </div>
 
 <div id="tab-suivre" style="display:none">
   <div style="max-width:500px">
-    <p style="font-size:14px;color:#8b949e;margin-bottom:14px">Entre ton ID de ticket pour voir son statut et la réponse de l'équipe.</p>
+    <p style="font-size:14px;color:#8b949e;margin-bottom:14px" data-i18n="follow_hint"></p>
     <div class="search-box">
-      <input type="text" id="search-id" placeholder="Ex: TKT-123456">
-      <button class="btn primary" onclick="searchTicket()">Rechercher</button>
+      <input type="text" id="search-id" data-i18n-ph="ph_search">
+      <button class="btn primary" onclick="searchTicket()" data-i18n="search_btn"></button>
     </div>
     <div id="search-result"></div>
   </div>
@@ -153,497 +153,171 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 
 <div id="tab-admin" style="display:none">
   <div id="admin-login" style="max-width:300px">
-    <label>Ton pseudo (staff)</label>
-    <input type="text" id="admin-name" placeholder="ex: NoxStudio">
-    <label>Mot de passe admin</label>
-    <input type="password" id="admin-pwd" placeholder="Mot de passe...">
-    <button class="btn primary" onclick="checkAdmin()">🔓 Connexion</button>
-    <div class="error" id="pwd-error">Mot de passe incorrect ou pseudo manquant.</div>
+    <label data-i18n="lbl_staff"></label>
+    <input type="text" id="admin-name" data-i18n-ph="ph_staff">
+    <label data-i18n="lbl_pwd"></label>
+    <input type="password" id="admin-pwd" data-i18n-ph="ph_pwd">
+    <button class="btn primary" onclick="checkAdmin()" data-i18n="login"></button>
+    <div class="error" id="pwd-error" data-i18n="pwd_error"></div>
   </div>
   <div id="admin-panel" style="display:none">
     <div class="admin-bar">
       <span>🛡️</span>
-      <span>Mode admin activé —</span>
+      <span data-i18n="admin_on"></span>
       <span id="admin-name-display" style="color:#a78bfa;font-weight:600"></span>
-      <span class="admin-badge">STAFF</span>
-      <button class="btn sm danger" style="margin-left:auto" onclick="logoutAdmin()">Déconnexion</button>
+      <span class="admin-badge" data-i18n="staff_badge"></span>
+      <button class="btn sm danger" style="margin-left:auto" onclick="logoutAdmin()" data-i18n="logout"></button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn sm" onclick="switchAdminTab('tickets')" id="atab-tickets" style="background:#238636;border-color:#2ea043;color:#fff">🎫 Tickets</button>
-      <button class="btn sm" onclick="switchAdminTab('logs')" id="atab-logs">📋 Logs</button>
+      <button class="btn sm" onclick="switchAdminTab('tickets')" id="atab-tickets" style="background:#238636;border-color:#2ea043;color:#fff" data-i18n="atab_tickets"></button>
+      <button class="btn sm" onclick="switchAdminTab('logs')" id="atab-logs" data-i18n="atab_logs"></button>
     </div>
 
     <div id="admin-tickets-section">
-    <div class="filters">
-      <button class="filter-btn active" onclick="setAdminFilter('all',this)">Tous</button>
-      <button class="filter-btn" onclick="setAdminFilter('open',this)">Ouverts</button>
-      <button class="filter-btn" onclick="setAdminFilter('in_progress',this)">En cours</button>
-      <button class="filter-btn" onclick="setAdminFilter('closed',this)">Fermés</button>
-    </div>
-    <div class="layout">
-      <div>
-        <div class="section-title">Liste</div>
-        <div class="ticket-list" id="admin-ticket-list"></div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setAdminFilter('all',this)" data-i18n="f_all"></button>
+        <button class="filter-btn" onclick="setAdminFilter('open',this)" data-i18n="f_open"></button>
+        <button class="filter-btn" onclick="setAdminFilter('in_progress',this)" data-i18n="f_progress"></button>
+        <button class="filter-btn" onclick="setAdminFilter('closed',this)" data-i18n="f_closed"></button>
       </div>
-      <div>
-        <div class="section-title">Gestion</div>
-        <div id="admin-ticket-detail"><div class="empty">Sélectionne un ticket</div></div>
+      <div class="layout">
+        <div>
+          <div class="section-title" data-i18n="list"></div>
+          <div class="ticket-list" id="admin-ticket-list"></div>
+        </div>
+        <div>
+          <div class="section-title" data-i18n="manage"></div>
+          <div id="admin-ticket-detail"><div class="empty" data-i18n="select_ticket"></div></div>
+        </div>
       </div>
-    </div>
     </div>
 
     <div id="admin-logs-section" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div class="section-title">Historique des actions</div>
-        <button class="btn sm" onclick="loadLogs()">🔄 Actualiser</button>
+        <div class="section-title" data-i18n="history"></div>
+        <button class="btn sm" onclick="loadLogs()" data-i18n="refresh"></button>
       </div>
-      <div id="logs-list"><div class="loading">⏳ Chargement...</div></div>
+      <div id="logs-list"><div class="loading" data-i18n="loading"></div></div>
     </div>
-
   </div>
 </div>
 
 <script>
+// ====== CONFIG ======
 const WH="https://discord.com/api/webhooks/1520805025750716507/Avd7bNjbGNa1GSpMf51znVPEHMo8HVHII-bZUcafi_YqU9-X1OVu-B5LTx8SSA6kpSDo";
 const WH_REPLY="https://discord.com/api/webhooks/1521086023487193159/VtbcLhraaqtOvzPiSLsjvlsaiJLUi1oBJDv2TWuEOYHD_8tHihUF87FORM5620g6bdCZ";
 const GS="https://script.google.com/macros/s/AKfycbwgWT8lfraeGVgWDu5q2aDMQKauXQ3jhOpOaLtQEIw3-Q7_n-v2X8NbTT9PHldJ9v3-/exec";
 const ADMIN_PASSWORD="NoxStudio";
+
 let tickets=[],filter="all",adminFilter="all",selectedId=null,adminSelectedId=null,isAdmin=false,adminPseudo="";
-
-function formatDate(d){
-  if(!d) return "";
-  return new Date(d).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-}
-
-function switchAdminTab(tab) {
-  document.getElementById("admin-tickets-section").style.display = tab==="tickets" ? "block" : "none";
-  document.getElementById("admin-logs-section").style.display = tab==="logs" ? "block" : "none";
-  document.getElementById("atab-tickets").style.cssText = tab==="tickets" ? "background:#238636;border-color:#2ea043;color:#fff" : "";
-  document.getElementById("atab-logs").style.cssText = tab==="logs" ? "background:#238636;border-color:#2ea043;color:#fff" : "";
-  if(tab==="logs") loadLogs();
-}
-
-async function addLog(action, ticketId, detail) {
-  const now = new Date().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-  const url = GS+"?action=addLog&staff="+encodeURIComponent(adminPseudo)+"&logAction="+encodeURIComponent(action)+"&ticketId="+encodeURIComponent(ticketId)+"&detail="+encodeURIComponent(detail)+"&date="+encodeURIComponent(now);
-  try { await fetch(url, { mode: 'no-cors' }); } catch(e) { console.error(e); }
-}
-
-async function loadLogs() {
-  const el = document.getElementById("logs-list");
-  el.innerHTML = '<div class="loading">Chargement...</div>';
-  try {
-    const r = await fetch(GS+"?action=getLogs");
-    const data = await r.json();
-    if(!data.length) { el.innerHTML='<div class="empty">Aucun log pour l\'instant.</div>'; return; }
-    const icons = { reply:"💬", update:"🔄", assign:"👤", delete:"🗑️", add:"🎫" };
-    const labels = { reply:"Réponse ajoutée", update:"Statut modifié", assign:"Ticket assigné", delete:"Ticket supprimé", add:"Ticket créé" };
-    el.innerHTML = data.reverse().map(function(row) {
-      var date=row[0], staff=row[1], action=row[2], ticketId=row[3], detail=row[4]||"";
-      return '<div class="log-entry">'
-        +'<span class="log-icon">'+(icons[action]||"📋")+'</span>'
-        +'<div class="log-content">'
-        +'<div class="log-action">'+(labels[action]||action)+' &mdash; <span style="font-family:monospace;color:#58a6ff">'+ticketId+'</span></div>'
-        +'<div class="log-meta">👤 '+staff+' · 📅 '+date+'</div>'
-        +(detail?'<div class="log-detail">'+detail+'</div>':'')
-        +'</div></div>';
-    }).join("");
-  } catch(e) {
-    el.innerHTML = '<div class="empty">Erreur de chargement.</div>';
-  }
-}
-
-async function loadTickets(){
-  try{
-    const r=await fetch(GS+"?action=get");
-    const data=await r.json();
-    tickets=data.filter(row=>row[0]).map(row=>({
-      id:row[0],date:formatDate(row[1]),name:row[2]||"",cat:row[3],
-      subject:row[4],prio:row[5],msg:row[6],status:row[7]||"open",
-      reply:row[8]||"",discord:row[9]||"",discordid:row[10]||"",
-      assignee:row[11]||""
-    })).reverse();
-    renderList();
-    if(isAdmin)renderAdminList();
-  }catch(e){
-    document.getElementById("ticket-list").innerHTML='<div class="empty">Aucun ticket.</div>';
-  }
-}
-
-function switchTab(t){
-  ["tickets","new","suivre","admin"].forEach(k=>document.getElementById("tab-"+k).style.display=k===t?"block":"none");
-  document.querySelectorAll(".tab").forEach((el,i)=>el.classList.toggle("active",["tickets","new","suivre","admin"][i]===t));
-  if(t==="tickets")loadTickets();
-}
-
-function setFilter(f,el){filter=f;document.querySelectorAll("#tab-tickets .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");renderList();}
-function setAdminFilter(f,el){adminFilter=f;document.querySelectorAll("#admin-panel .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");renderAdminList();}
-function statusLabel(s){return{open:"Ouvert",in_progress:"En cours",closed:"Fermé"}[s]||s}
-function statusIcon(s){return{open:"🔵",in_progress:"🟡",closed:"🟢"}[s]||""}
-function prioClass(p){return{Haute:"prio-high",Moyenne:"prio-med",Faible:"prio-low"}[p]||"prio-low"}
-
-function ticketCard(t,sel,fn){
-  return '<div class="ticket'+(sel===t.id?" selected":"")+'" onclick="'+fn+'(\''+t.id+'\')">'
-    +'<div class="ticket-header"><span class="ticket-id">'+t.id+'</span><span class="pill '+t.status+'">'+statusLabel(t.status)+'</span></div>'
-    +'<div class="ticket-title">'+t.subject+'</div>'
-    +'<div class="ticket-meta" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">@'+t.discord+' · '+t.cat+' · <span class="pill '+prioClass(t.prio)+'">'+t.prio+'</span>'
-    +(t.assignee?'<span class="assigned">👤 '+t.assignee+'</span>':'')
-    +'</div></div>';
-}
-
-function ticketDetailHTML(t){
-  return '<div class="detail">'
-    +'<div class="ticket-id" style="margin-bottom:6px">'+t.id+' · '+t.date+'</div>'
-    +'<div class="detail-title">'+t.subject+'</div>'
-    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center">'
-    +'<span class="pill '+t.status+'">'+statusLabel(t.status)+'</span>'
-    +'<span class="pill '+prioClass(t.prio)+'">'+t.prio+'</span>'
-    +'<span style="font-size:12px;color:#8b949e">'+t.cat+'</span>'
-    +(t.assignee?'<span class="assigned">👤 '+t.assignee+'</span>':'')
-    +'</div>'
-    +'<div style="font-size:12px;color:#5865f2;margin-bottom:8px">@'+t.discord+'</div>'
-    +'<div class="detail-body">'+t.msg+'</div>'
-    +(t.reply
-      ?'<div class="reply-box"><div class="reply-label">💬 Réponse de l\'équipe</div><div class="reply-text">'+t.reply+'</div></div>'
-      :'<div style="font-size:12px;color:#8b949e;margin-top:10px;font-style:italic">En attente de réponse de l\'équipe...</div>')
-    +'</div>';
-}
-
-function renderList(){
-  const list=tickets.filter(t=>filter==="all"||t.status===filter);
-  document.getElementById("open-count").textContent=tickets.filter(t=>t.status==="open").length;
-  const el=document.getElementById("ticket-list");
-  if(!list.length){el.innerHTML='<div class="empty">Aucun ticket.</div>';return;}
-  el.innerHTML=list.map(t=>ticketCard(t,selectedId,"selectTicket")).join("");
-}
-
-function renderAdminList(){
-  const list=tickets.filter(t=>adminFilter==="all"||t.status===adminFilter);
-  const el=document.getElementById("admin-ticket-list");
-  if(!list.length){el.innerHTML='<div class="empty">Aucun ticket.</div>';return;}
-  el.innerHTML=list.map(t=>ticketCard(t,adminSelectedId,"selectAdminTicket")).join("");
-}
-
-function selectTicket(id){
-  selectedId=id;renderList();
-  document.getElementById("ticket-detail").innerHTML=ticketDetailHTML(tickets.find(x=>x.id===id));
-}
-
-function selectAdminTicket(id){
-  adminSelectedId=id;
-  const t=tickets.find(x=>x.id===id);
-  renderAdminList();
-  document.getElementById("admin-ticket-detail").innerHTML='<div class="detail">'
-    +'<div class="ticket-id" style="margin-bottom:6px">'+t.id+' · '+t.date+'</div>'
-    +'<div class="detail-title">'+t.subject+'</div>'
-    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center">'
-    +'<span class="pill '+t.status+'">'+statusLabel(t.status)+'</span>'
-    +'<span class="pill '+prioClass(t.prio)+'">'+t.prio+'</span>'
-    +'<span style="font-size:12px;color:#8b949e">'+t.cat+'</span>'
-    +(t.assignee?'<span class="assigned">👤 '+t.assignee+'</span>':'')
-    +'</div>'
-    +'<div style="font-size:12px;color:#5865f2;margin-bottom:4px">@'+t.discord+'</div>'
-    +(t.discordid?'<div style="font-size:11px;color:#8b949e;margin-bottom:8px;font-family:monospace">ID: '+t.discordid+'</div>':'')
-    +'<div class="detail-body">'+t.msg+'</div>'
-    +(t.reply?'<div class="reply-box"><div class="reply-label">💬 Réponse actuelle</div><div class="reply-text">'+t.reply+'</div></div>':'')
-    +'<div class="reply-input-box">'
-    +'<label>👤 Assigné à</label>'
-    +'<input id="admin-assignee" type="text" value="'+(t.assignee||adminPseudo)+'" placeholder="Pseudo du staff qui prend en charge" style="margin-bottom:8px">'
-    +'<label>🔄 Statut</label>'
-    +'<select id="admin-status-sel" style="margin-bottom:8px">'
-    +'<option value="open"'+(t.status==="open"?" selected":"")+'>🔵 Ouvert</option>'
-    +'<option value="in_progress"'+(t.status==="in_progress"?" selected":"")+'>🟡 En cours</option>'
-    +'<option value="closed"'+(t.status==="closed"?" selected":"")+'>🟢 Fermé</option>'
-    +'</select>'
-    +'<label>✏️ Réponse</label>'
-    +'<textarea id="admin-reply-txt" placeholder="Écris ta réponse ici...">'+t.reply+'</textarea>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px">'
-    +'<button class="btn sm primary" onclick="saveReply(\''+id+'\')">💾 Enregistrer + Notifier</button>'
-    +'<button class="btn sm danger" onclick="deleteTicket(\''+id+'\')">🗑 Supprimer</button>'
-    +'</div></div></div>';
-}
-
-function saveReply(id){
-  const t=tickets.find(x=>x.id===id);
-  const newReply=document.getElementById("admin-reply-txt").value;
-  const newStatus=document.getElementById("admin-status-sel").value;
-  const newAssignee=document.getElementById("admin-assignee").value;
-  const oldStatus=t.status;
-  t.reply=newReply;t.status=newStatus;t.assignee=newAssignee;
-  fetch(GS+"?action=reply&id="+encodeURIComponent(id)+"&reply="+encodeURIComponent(newReply), { mode: 'no-cors' });
-  fetch(GS+"?action=update&id="+encodeURIComponent(id)+"&status="+encodeURIComponent(newStatus), { mode: 'no-cors' });
-  fetch(GS+"?action=assign&id="+encodeURIComponent(id)+"&assignee="+encodeURIComponent(newAssignee), { mode: 'no-cors' });
-  if(newReply)notifyReply(t,newReply);
-  if(newStatus!==oldStatus)notifyStatus(t,oldStatus,newStatus);
-  if(newReply) addLog("reply", id, "Réponse: "+newReply.slice(0,60)+(newReply.length>60?"...":""));
-  if(newStatus!==oldStatus) addLog("update", id, statusLabel(oldStatus)+" → "+statusLabel(newStatus));
-  if(newAssignee&&newAssignee!==t.assignee) addLog("assign", id, "Assigné à: "+newAssignee);
-  renderAdminList();selectAdminTicket(id);
-}
-
-async function notifyReply(t,reply){
-  const mention=t.discordid?"<@"+t.discordid+">":"@"+t.discord;
-  const payload={
-    content:mention+" — 💬 L'équipe a répondu à ton ticket !",
-    embeds:[{
-      title:"💬 Réponse à ton ticket — "+t.id,
-      color:3447003,
-      fields:[
-        {name:"Sujet",value:t.subject},
-        {name:"Réponse de l'équipe",value:reply},
-        {name:"Statut",value:statusIcon(t.status)+" "+statusLabel(t.status),inline:true},
-        {name:"Pris en charge par",value:"👤 "+(t.assignee||"Équipe NoxStudio"),inline:true}
-      ],
-      footer:{text:"Support NoxStudio — onglet 🔍 Suivre mon ticket avec l'ID "+t.id}
-    }]
-  };
-  try{await fetch(WH_REPLY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
-  catch(e){console.error(e);}
-}
-
-async function notifyStatus(t,oldStatus,newStatus){
-  const mention=t.discordid?"<@"+t.discordid+">":"@"+t.discord;
-  const colors={open:3447003,in_progress:16776960,closed:3066993};
-  const payload={
-    content:mention+" — 🔔 Le statut de ton ticket a changé !",
-    embeds:[{
-      title:"🔔 Mise à jour du ticket — "+t.id,
-      color:colors[newStatus]||3447003,
-      fields:[
-        {name:"Sujet",value:t.subject},
-        {name:"Ancien statut",value:statusIcon(oldStatus)+" "+statusLabel(oldStatus),inline:true},
-        {name:"Nouveau statut",value:statusIcon(newStatus)+" "+statusLabel(newStatus),inline:true},
-        {name:"Pris en charge par",value:"👤 "+(t.assignee||"Équipe NoxStudio"),inline:true}
-      ],
-      footer:{text:"Support NoxStudio — onglet 🔍 Suivre mon ticket avec l'ID "+t.id}
-    }]
-  };
-  try{await fetch(WH_REPLY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
-  catch(e){console.error(e);}
-}
-
-function deleteTicket(id){
-  const td=tickets.find(x=>x.id===id);
-  addLog("delete", id, td?"Sujet: "+td.subject.slice(0,50):"");
-  fetch(GS+"?action=delete&id="+encodeURIComponent(id), { mode: 'no-cors' });
-  tickets=tickets.filter(x=>x.id!==id);
-  adminSelectedId=null;selectedId=null;
-  document.getElementById("admin-ticket-detail").innerHTML='<div class="empty">Sélectionne un ticket</div>';
-  document.getElementById("ticket-detail").innerHTML='<div class="empty">Sélectionne un ticket</div>';
-  renderAdminList();renderList();
-}
-
-function searchTicket(){
-  const sid=document.getElementById("search-id").value.trim().toUpperCase();
-  const t=tickets.find(x=>x.id===sid);
-  const el=document.getElementById("search-result");
-  if(!t){el.innerHTML='<div style="color:#f85149;font-size:14px;margin-top:10px">❌ Ticket introuvable.</div>';return;}
-  el.innerHTML=ticketDetailHTML(t);
-}
-
-function checkAdmin(){
-  const pwd=document.getElementById("admin-pwd").value;
-  const name=document.getElementById("admin-name").value.trim();
-  if(pwd===ADMIN_PASSWORD&&name){
-    isAdmin=true;adminPseudo=name;
-    document.getElementById("admin-login").style.display="none";
-    document.getElementById("admin-panel").style.display="block";
-    document.getElementById("pwd-error").style.display="none";
-    document.getElementById("admin-name-display").textContent=name;
-    loadTickets();
-  }else{document.getElementById("pwd-error").style.display="block";}
-}
-
-function logoutAdmin(){
-  isAdmin=false;adminPseudo="";
-  document.getElementById("admin-login").style.display="block";
-  document.getElementById("admin-panel").style.display="none";
-  document.getElementById("admin-pwd").value="";
-  document.getElementById("admin-name").value="";
-}
-
-function createTicket(){
-  const discord=document.getElementById("t-discord").value.trim();
-  const discordid=document.getElementById("t-discordid").value.trim();
-  const subject=document.getElementById("t-subject").value.trim();
-  const msg=document.getElementById("t-msg").value.trim();
-  const cat=document.getElementById("t-cat").value;
-  const prio=document.getElementById("t-prio").value;
-  const err=document.getElementById("form-error");
-  if(!discord||!discordid||!subject||!msg){err.style.display="block";return;}
-  err.style.display="none";
-  const id="TKT-"+String(Date.now()).slice(-6);
-  const now=new Date().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-  const t={id,name:"",discord,discordid,cat,subject,msg,prio,status:"open",date:now,reply:"",assignee:""};
-  tickets.unshift(t);renderList();
-  saveToSheets(t);sendToDiscord(t);
-  addLog("add", id, "Sujet: "+subject+" · Par: "+discord);
-  document.getElementById("t-discord").value="";
-  document.getElementById("t-discordid").value="";
-  document.getElementById("t-subject").value="";
-  document.getElementById("t-msg").value="";
-  switchTab("tickets");
-  const n=document.getElementById("notif-created");
-  n.innerHTML="✅ Ticket créé ! Ton ID : <strong>"+id+"</strong> — note-le pour suivre ta demande dans l'onglet 🔍";
-  n.classList.add("show");
-  setTimeout(()=>n.classList.remove("show"),10000);
-}
-
-async function saveToSheets(t){
-  try{
-    const url = GS+"?action=add&id="+encodeURIComponent(t.id)+"&date="+encodeURIComponent(t.date)+"&name=&cat="+encodeURIComponent(t.cat)+"&subject="+encodeURIComponent(t.subject)+"&prio="+encodeURIComponent(t.prio)+"&msg="+encodeURIComponent(t.msg)+"&status=open&discord="+encodeURIComponent(t.discord)+"&discordid="+encodeURIComponent(t.discordid)+"&assignee=";
-    await fetch(url, { mode: 'no-cors' });
-  }catch(e){console.error(e);}
-}
-
-async function sendToDiscord(t){
-  const colors={Haute:15158332,Moyenne:16776960,Faible:3447003};
-  const payload={content:"<@&1496526102544515159> — 🎫 Nouveau ticket à traiter !",embeds:[{
-    title:"🎫 Nouveau ticket — "+t.id,
-    color:colors[t.prio]||3447003,
-    fields:[
-      {name:"Sujet",value:t.subject},
-      {name:"Discord",value:"@"+t.discord+" ("+t.discordid+")",inline:true},
-      {name:"Catégorie",value:t.cat,inline:true},
-      {name:"Priorité",value:t.prio,inline:true},
-      {name:"Message",value:t.msg}
-    ],
-    footer:{text:"Ticket Support NoxStudio · "+t.date}
-  }]};
-  try{await fetch(WH,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}catch(e){}
-}
-
-document.getElementById("admin-pwd").addEventListener("keydown",e=>{if(e.key==="Enter")checkAdmin();});
-document.getElementById("search-id").addEventListener("keydown",e=>{if(e.key==="Enter")searchTicket();});
-
-// ===== SYSTÈME DE TRADUCTION =====
 let lang="fr";
-const translations={
-  fr:{
-    subtitle:"Système de tickets — envoie ta demande, on te répond sur Discord",
-    tab_tickets:"Tickets",tab_new:"+ Nouveau ticket",tab_suivre:"🔍 Suivre mon ticket",tab_admin:"🔒 Admin",
-    filter_all:"Tous",filter_open:"Ouverts",filter_progress:"En cours",filter_closed:"Fermés",
-    detail_empty:"Sélectionne un ticket",
-    form_discord_tag:"Tag Discord (pseudo)",form_discord_id:"ID Discord",
-    form_discord_hint:"⚠️ Requis pour recevoir une vraie notification Discord",
-    form_cat:"Catégorie",form_subject:"Sujet",form_prio:"Priorité",form_msg:"Description",
-    form_send:"📨 Envoyer le ticket",form_error:"Remplis tous les champs.",
-    form_prio_low:"Faible",form_prio_med:"Moyenne",form_prio_high:"Haute",
-    form_cat1:"Support général",form_cat2:"Bug / Problème",form_cat3:"Demande de partenariat",form_cat4:"Sanction / Appel",form_cat5:"Autre",
-    guide_title:"📋 Comment trouver ton ID Discord ?",
-    guide_step1:"1. Dans Discord → <strong>Paramètres → Avancé → Active le Mode développeur</strong>",
-    guide_step2:"2. Clic droit sur ton avatar → <strong>Copier l'identifiant</strong>",
-    guide_step3:"L'ID ressemble à : <strong>123456789012345678</strong>",
-    suivre_hint:"Entre ton ID de ticket pour voir son statut et la réponse de l'équipe.",
-    suivre_placeholder:"Ex: TKT-123456",suivre_btn:"Rechercher",suivre_notfound:"❌ Ticket introuvable.",
-    admin_name_label:"Ton pseudo (staff)",admin_name_ph:"ex: NoxStudio",
-    admin_pwd_label:"Mot de passe admin",admin_pwd_ph:"Mot de passe...",
-    admin_login_btn:"🔓 Connexion",admin_pwd_error:"Mot de passe incorrect ou pseudo manquant.",
-    admin_mode:"Mode admin activé —",admin_badge:"STAFF",admin_logout:"Déconnexion",
-    admin_assignee:"👤 Assigné à",admin_status:"🔄 Statut",admin_reply_label:"✏️ Réponse",
-    admin_reply_ph:"Écris ta réponse ici...",admin_save:"💾 Enregistrer + Notifier",admin_delete:"🗑 Supprimer",
-    status_open:"🔵 Ouvert",status_progress:"🟡 En cours",status_closed:"🟢 Fermé",
-    waiting_reply:"En attente de réponse de l'équipe...",reply_current:"💬 Réponse actuelle",
-    reply_team:"💬 Réponse de l'équipe",assigned_by:"Pris en charge par",
-    notif_created:"✅ Ticket créé ! Ton ID : {id} — note-le pour suivre ta demande dans l'onglet 🔍",
-    loading:"⏳ Chargement...",no_ticket:"Aucun ticket.",
-    discord_tag_ph:"ex: NoxStudio",discord_id_ph:"ex: 123456789012345678",
-    subject_ph:"Résume ton problème",msg_ph:"Explique en détail...",assignee_ph:"Pseudo du staff qui prend en charge"
-  },
-  en:{
-    subtitle:"Ticket system — send your request, we reply on Discord",
-    tab_tickets:"Tickets",tab_new:"+ New ticket",tab_suivre:"🔍 Track my ticket",tab_admin:"🔒 Admin",
-    filter_all:"All",filter_open:"Open",filter_progress:"In progress",filter_closed:"Closed",
-    detail_empty:"Select a ticket",
-    form_discord_tag:"Discord tag (username)",form_discord_id:"Discord ID",
-    form_discord_hint:"⚠️ Required to receive a real Discord notification",
-    form_cat:"Category",form_subject:"Subject",form_prio:"Priority",form_msg:"Description",
-    form_send:"📨 Send ticket",form_error:"Please fill in all fields.",
-    form_prio_low:"Low",form_prio_med:"Medium",form_prio_high:"High",
-    form_cat1:"General support",form_cat2:"Bug / Issue",form_cat3:"Partnership request",form_cat4:"Sanction / Appeal",form_cat5:"Other",
-    guide_title:"📋 How to find your Discord ID?",
-    guide_step1:"1. In Discord → <strong>Settings → Advanced → Enable Developer Mode</strong>",
-    guide_step2:"2. Right-click your avatar → <strong>Copy User ID</strong>",
-    guide_step3:"The ID looks like: <strong>123456789012345678</strong>",
-    suivre_hint:"Enter your ticket ID to see its status and the team's reply.",
-    suivre_placeholder:"Ex: TKT-123456",suivre_btn:"Search",suivre_notfound:"❌ Ticket not found.",
-    admin_name_label:"Your username (staff)",admin_name_ph:"ex: NoxStudio",
-    admin_pwd_label:"Admin password",admin_pwd_ph:"Password...",
-    admin_login_btn:"🔓 Login",admin_pwd_error:"Wrong password or missing username.",
-    admin_mode:"Admin mode active —",admin_badge:"STAFF",admin_logout:"Logout",
-    admin_assignee:"👤 Assigned to",admin_status:"🔄 Status",admin_reply_label:"✏️ Reply",
-    admin_reply_ph:"Write your reply here...",admin_save:"💾 Save + Notify",admin_delete:"🗑 Delete",
-    status_open:"🔵 Open",status_progress:"🟡 In progress",status_closed:"Closed",
-    waiting_reply:"Waiting for the team's reply...",reply_current:"💬 Current reply",
-    reply_team:"💬 Team reply",assigned_by:"Handled by",
-    notif_created:"✅ Ticket created! Your ID: {id} — save it to track your request in the 🔍 tab",
-    loading:"⏳ Loading...",no_ticket:"No tickets.",
-    discord_tag_ph:"ex: NoxStudio",discord_id_ph:"ex: 123456789012345678",
-    subject_ph:"Summarize your issue",msg_ph:"Explain in detail...",assignee_ph:"Staff username handling this ticket"
-  }
-};
+try{ if(localStorage.getItem("lang")==="en") lang="en"; }catch(e){}
 
-function t(key){return translations[lang][key]||key;}
-
-function toggleLang(){
-  lang=lang==="fr"?"en":"fr";
-  document.getElementById("lang-toggle").textContent=lang==="fr"?"🇬🇧 English":"🇫🇷 Français";
-  applyLang();
-  renderList();
-  if(isAdmin)renderAdminList();
-  if(selectedId)selectTicket(selectedId);
-  if(adminSelectedId)selectAdminTicket(adminSelectedId);
-}
+// ====== TRADUCTIONS ======
+const TR={
+fr:{
+  subtitle:"Système de tickets — envoie ta demande, on te répond sur Discord",
+  tab_tickets:"Tickets",tab_new:"+ Nouveau ticket",tab_follow:"🔍 Suivre mon ticket",tab_admin:"🔒 Admin",
+  f_all:"Tous",f_open:"Ouverts",f_progress:"En cours",f_closed:"Fermés",
+  list:"Liste",detail:"Détail",manage:"Gestion",history:"Historique des actions",refresh:"🔄 Actualiser",
+  select_ticket:"Sélectionne un ticket",loading:"⏳ Chargement...",no_ticket:"Aucun ticket.",
+  guide:"📋 <strong>Comment trouver ton ID Discord ?</strong><br>1. Dans Discord → <strong>Paramètres → Avancé → Active le Mode développeur</strong><br>2. Clic droit sur ton avatar → <strong>Copier l'identifiant</strong><br>L'ID ressemble à : <strong>123456789012345678</strong>",
+  lbl_tag:"Tag Discord (pseudo)",ph_tag:"ex: NoxStudio",lbl_id:"ID Discord",ph_id:"ex: 123456789012345678",
+  hint_id:"⚠️ Requis pour recevoir une vraie notification Discord",
+  lbl_cat:"Catégorie",cat1:"Support général",cat2:"Bug / Problème",cat3:"Demande de partenariat",cat4:"Sanction / Appel",cat5:"Autre",
+  lbl_subject:"Sujet",ph_subject:"Résume ton problème",lbl_prio:"Priorité",prio_low:"Faible",prio_med:"Moyenne",prio_high:"Haute",
+  lbl_msg:"Description",ph_msg:"Explique en détail...",send:"📨 Envoyer le ticket",form_error:"Remplis tous les champs.",
+  follow_hint:"Entre ton ID de ticket pour voir son statut et la réponse de l'équipe.",ph_search:"Ex: TKT-123456",
+  search_btn:"Rechercher",not_found:"❌ Ticket introuvable.",
+  lbl_staff:"Ton pseudo (staff)",ph_staff:"ex: NoxStudio",lbl_pwd:"Mot de passe admin",ph_pwd:"Mot de passe...",
+  login:"🔓 Connexion",pwd_error:"Mot de passe incorrect ou pseudo manquant.",
+  admin_on:"Mode admin activé —",staff_badge:"STAFF",logout:"Déconnexion",
+  atab_tickets:"🎫 Tickets",atab_logs:"📋 Logs",
+  lbl_assignee:"👤 Assigné à",ph_assignee:"Pseudo du staff qui prend en charge",lbl_status:"🔄 Statut",
+  opt_open:"🔵 Ouvert",opt_progress:"🟡 En cours",opt_closed:"🟢 Fermé",
+  lbl_reply:"✏️ Réponse",ph_reply:"Écris ta réponse ici...",save:"💾 Enregistrer + Notifier",del:"🗑 Supprimer",
+  confirm_delete:"Supprimer ce ticket ?",
+  status_open:"Ouvert",status_in_progress:"En cours",status_closed:"Fermé",
+  waiting:"En attente de réponse de l'équipe...",reply_current:"💬 Réponse actuelle",reply_team:"💬 Réponse de l'équipe",
+  no_log:"Aucun log pour l'instant.",log_error:"Erreur de chargement.",
+  log_reply:"Réponse ajoutée",log_update:"Statut modifié",log_assign:"Ticket assigné",log_delete:"Ticket supprimé",log_add:"Ticket créé",
+  created:"✅ Ticket créé ! Ton ID : <strong>{id}</strong> — note-le pour suivre ta demande dans l'onglet 🔍",
+  btn_lang:"🇬🇧 English"
+},
+en:{
+  subtitle:"Ticket system — send your request, we reply on Discord",
+  tab_tickets:"Tickets",tab_new:"+ New ticket",tab_follow:"🔍 Track my ticket",tab_admin:"🔒 Admin",
+  f_all:"All",f_open:"Open",f_progress:"In progress",f_closed:"Closed",
+  list:"List",detail:"Details",manage:"Management",history:"Action history",refresh:"🔄 Refresh",
+  select_ticket:"Select a ticket",loading:"⏳ Loading...",no_ticket:"No tickets.",
+  guide:"📋 <strong>How to find your Discord ID?</strong><br>1. In Discord → <strong>Settings → Advanced → Enable Developer Mode</strong><br>2. Right-click your avatar → <strong>Copy User ID</strong><br>The ID looks like: <strong>123456789012345678</strong>",
+  lbl_tag:"Discord tag (username)",ph_tag:"e.g. NoxStudio",lbl_id:"Discord ID",ph_id:"e.g. 123456789012345678",
+  hint_id:"⚠️ Required to receive a real Discord notification",
+  lbl_cat:"Category",cat1:"General support",cat2:"Bug / Issue",cat3:"Partnership request",cat4:"Sanction / Appeal",cat5:"Other",
+  lbl_subject:"Subject",ph_subject:"Summarize your problem",lbl_prio:"Priority",prio_low:"Low",prio_med:"Medium",prio_high:"High",
+  lbl_msg:"Description",ph_msg:"Explain in detail...",send:"📨 Send ticket",form_error:"Please fill in all fields.",
+  follow_hint:"Enter your ticket ID to see its status and the team's reply.",ph_search:"e.g. TKT-123456",
+  search_btn:"Search",not_found:"❌ Ticket not found.",
+  lbl_staff:"Your username (staff)",ph_staff:"e.g. NoxStudio",lbl_pwd:"Admin password",ph_pwd:"Password...",
+  login:"🔓 Log in",pwd_error:"Wrong password or missing username.",
+  admin_on:"Admin mode enabled —",staff_badge:"STAFF",logout:"Log out",
+  atab_tickets:"🎫 Tickets",atab_logs:"📋 Logs",
+  lbl_assignee:"👤 Assigned to",ph_assignee:"Username of the staff member handling it",lbl_status:"🔄 Status",
+  opt_open:"🔵 Open",opt_progress:"🟡 In progress",opt_closed:"🟢 Closed",
+  lbl_reply:"✏️ Reply",ph_reply:"Write your reply here...",save:"💾 Save + Notify",del:"🗑 Delete",
+  confirm_delete:"Delete this ticket?",
+  status_open:"Open",status_in_progress:"In progress",status_closed:"Closed",
+  waiting:"Waiting for the team's reply...",reply_current:"💬 Current reply",reply_team:"💬 Team reply",
+  no_log:"No logs yet.",log_error:"Loading error.",
+  log_reply:"Reply added",log_update:"Status changed",log_assign:"Ticket assigned",log_delete:"Ticket deleted",log_add:"Ticket created",
+  created:"✅ Ticket created! Your ID: <strong>{id}</strong> — write it down to track your request in the 🔍 tab",
+  btn_lang:"🇫🇷 Français"
+}};
+function tr(k){ return (TR[lang]&&TR[lang][k]) || TR.fr[k] || k; }
 
 function applyLang(){
-  const T=translations[lang];
-  document.getElementById("txt-subtitle").textContent=T.subtitle;
-  const tabs=document.querySelectorAll(".tab");
-  if(tabs[0])tabs[0].innerHTML=T.tab_tickets+'<span class="badge" id="open-count">'+document.getElementById("open-count").textContent+'</span>';
-  if(tabs[1])tabs[1].textContent=T.tab_new;
-  if(tabs[2])tabs[2].textContent=T.tab_suivre;
-  if(tabs[3])tabs[3].textContent=T.tab_admin;
-  document.querySelectorAll("#tab-tickets .filter-btn").forEach((b,i)=>{
-    b.textContent=[T.filter_all,T.filter_open,T.filter_progress,T.filter_closed][i]||b.textContent;
-  });
-  const el=document.getElementById("ticket-detail");
-  if(el.querySelector(".empty"))el.innerHTML='<div class="empty">'+T.detail_empty+'</div>';
-  // formulaire
-  const fl=document.querySelectorAll("#tab-new label");
-  if(fl[0])fl[0].textContent=T.form_discord_tag;
-  if(fl[1])fl[1].textContent=T.form_discord_id;
-  if(fl[2])fl[2].textContent=T.form_cat;
-  if(fl[3])fl[3].textContent=T.form_subject;
-  if(fl[4])fl[4].textContent=T.form_prio;
-  if(fl[5])fl[5].textContent=T.form_msg;
-  const btn=document.querySelector("#tab-new .btn.primary");
-  if(btn)btn.textContent=T.form_send;
-  const hint=document.querySelector("#tab-new .hint");
-  if(hint)hint.textContent=T.form_discord_hint;
-  document.getElementById("t-discord").placeholder=T.discord_tag_ph;
-  document.getElementById("t-discordid").placeholder=T.discord_id_ph;
-  document.getElementById("t-subject").placeholder=T.subject_ph;
-  document.getElementById("t-msg").placeholder=T.msg_ph;
-  // guide
-  const gb=document.querySelector(".guide-box");
-  if(gb)gb.innerHTML='<strong>'+T.guide_title+'</strong><br>'+T.guide_step1+'<br>'+T.guide_step2+'<br>'+T.guide_step3;
-  // suivre
-  const sh=document.querySelector("#tab-suivre p");
-  if(sh)sh.textContent=T.suivre_hint;
-  document.getElementById("search-id").placeholder=T.suivre_placeholder;
-  const sb=document.querySelector("#tab-suivre .btn.primary");
-  if(sb)sb.textContent=T.suivre_btn;
-  // admin login
-  const al=document.querySelectorAll("#admin-login label");
-  if(al[0])al[0].textContent=T.admin_name_label;
-  if(al[1])al[1].textContent=T.admin_pwd_label;
-  document.getElementById("admin-name").placeholder=T.admin_name_ph;
-  document.getElementById("admin-pwd").placeholder=T.admin_pwd_ph;
-  const alb=document.querySelector("#admin-login .btn.primary");
-  if(alb)alb.textContent=T.admin_login_btn;
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.innerHTML=tr(el.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.placeholder=tr(el.getAttribute("data-i18n-ph")); });
+  document.getElementById("lang-toggle").textContent=tr("btn_lang");
+  renderList();
+  if(isAdmin) renderAdminList();
+  if(selectedId&&tickets.find(x=>x.id===selectedId)) selectTicket(selectedId);
+  else document.getElementById("ticket-detail").innerHTML='<div class="empty">'+tr("select_ticket")+'</div>';
+  if(isAdmin&&adminSelectedId&&tickets.find(x=>x.id===adminSelectedId)) selectAdminTicket(adminSelectedId);
+  else if(isAdmin) document.getElementById("admin-ticket-detail").innerHTML='<div class="empty">'+tr("select_ticket")+'</div>';
+  const sr=document.getElementById("search-result");
+  if(sr.innerHTML&&document.getElementById("search-id").value.trim()) searchTicket();
+}
+function toggleLang(){
+  lang=lang==="fr"?"en":"fr";
+  try{ localStorage.setItem("lang",lang); }catch(e){}
+  applyLang();
 }
 
-loadTickets();
-</script>
-</body>
-</html>
+// ====== OUTILS ======
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function cut(s,n){ s=String(s==null?"":s); return s.length>n?s.slice(0,n-1)+"…":s; }
+function formatDate(d){
+  if(!d) return "";
+  const dt=new Date(d);
+  if(isNaN(dt)) return String(d);
+  return dt.toLocaleString(lang==="fr"?"fr-FR":"en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function nowStr(){
+  return new Date().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+// Appel au Google Apps Script (écritures)
+function gs(params){
+  const qs=Object.keys(params).map(k=>k+"="+encodeURIComponent(params[k]==null?"":params[k])).join("&");
+  return fetch(GS+"?"+qs,{mode:"no-cors"}).catch(e=>console.error("GS error",e));
+}
+function statusLabel(s){ return tr("status_"+s); }
+function statusIcon(s){return{open:"🔵",in_progress:"🟡",closed:"🟢"}[s]||""}
+function prioClass(p){return{Haute:"prio-high",Moyenne:"prio-med",Faible:"prio-low"}[p]||"prio-low"}
+function prioLabel(p){return{Haute:tr("prio_high"),Moyenne:tr("prio_med"),Faible:tr("prio_low")}[p]||p}
+
+// ====== LOGS ======
+async
