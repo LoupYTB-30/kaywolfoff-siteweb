@@ -134,7 +134,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
       <option value="Haute" data-i18n="prio_high"></option>
     </select>
     <label data-i18n="lbl_msg"></label>
-    <textarea id="t-msg" maxlength="1500" data-i18n-ph="ph_msg"></textarea>
+    <textarea id="t-msg" maxlength="1000" data-i18n-ph="ph_msg"></textarea>
     <button class="btn primary" onclick="createTicket()" data-i18n="send"></button>
     <div class="error" id="form-error" data-i18n="form_error"></div>
   </div>
@@ -204,7 +204,6 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 
 <script>
 // ====== CONFIG ======
-// ⚠️ Régénère tes webhooks Discord (ils ont été exposés) et colle les nouveaux ici.
 const WH="COLLE_ICI_LE_WEBHOOK_NOUVEAUX_TICKETS";
 const WH_REPLY="COLLE_ICI_LE_WEBHOOK_REPONSES";
 const GS="https://script.google.com/macros/s/AKfycbwgWT8lfraeGVgWDu5q2aDMQKauXQ3jhOpOaLtQEIw3-Q7_n-v2X8NbTT9PHldJ9v3-/exec";
@@ -311,9 +310,27 @@ function nowStr(){
   return new Date().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
 }
 // Appel au Google Apps Script (écritures)
-function gs(params){
-  const qs=Object.keys(params).map(k=>k+"="+encodeURIComponent(params[k]==null?"":params[k])).join("&");
-  return fetch(GS+"?"+qs,{mode:"no-cors"}).catch(e=>console.error("GS error",e));
+// Appel au script Google en "JSONP" (balise <script>) : évite les blocages CORS / connexion Google
+function jsonp(params){
+  return new Promise(function(resolve,reject){
+    const cb="cb_"+Date.now()+"_"+Math.floor(Math.random()*1e6);
+    const qs=Object.keys(params).map(k=>k+"="+encodeURIComponent(params[k]==null?"":params[k])).join("&");
+    const s=document.createElement("script");
+    const timer=setTimeout(function(){cleanup();reject(new Error("timeout"));},25000);
+    function cleanup(){ clearTimeout(timer); try{delete window[cb];}catch(e){window[cb]=undefined;} if(s.parentNode) s.parentNode.removeChild(s); }
+    window[cb]=function(data){ cleanup(); resolve(data); };
+    s.onerror=function(){ cleanup(); reject(new Error("script error")); };
+    s.src=GS+"?"+qs+"&callback="+cb;
+    document.head.appendChild(s);
+  });
+}
+// Écritures : on attend la réponse du script, et on signale l'échec dans la console
+async function gs(params){
+  try{
+    const r=await jsonp(params);
+    if(r&&r.ok===false) console.error("GS refus",params.action,r);
+    return r;
+  }catch(e){ console.error("GS error",params.action,e); return null; }
 }
 function statusLabel(s){ return tr("status_"+s); }
 function statusIcon(s){return{open:"🔵",in_progress:"🟡",closed:"🟢"}[s]||""}
@@ -329,8 +346,7 @@ async function loadLogs(){
   const el=document.getElementById("logs-list");
   el.innerHTML='<div class="loading">'+tr("loading")+'</div>';
   try{
-    const r=await fetch(GS+"?action=getLogs");
-    const data=await r.json();
+    const data=await jsonp({action:"getLogs"});
     if(!Array.isArray(data)||!data.length){ el.innerHTML='<div class="empty">'+tr("no_log")+'</div>'; return; }
     const icons={reply:"💬",update:"🔄",assign:"👤",delete:"🗑️",add:"🎫"};
     el.innerHTML=data.slice().reverse().map(function(row){
@@ -360,8 +376,7 @@ function switchAdminTab(tab){
 // ====== TICKETS ======
 async function loadTickets(){
   try{
-    const r=await fetch(GS+"?action=get");
-    const data=await r.json();
+    const data=await jsonp({action:"get"});
     if(!Array.isArray(data)) throw new Error("Réponse inattendue");
     tickets=data.filter(row=>row[0]).map(row=>({
       id:String(row[0]),date:formatDate(row[1]),name:row[2]||"",cat:row[3],
@@ -481,14 +496,14 @@ async function saveReply(id){
   // Mise à jour de l'affichage tout de suite
   renderAdminList(); renderList(); selectAdminTicket(id);
 
+  // Notifications Discord (seulement si quelque chose a changé)
+  if(newReply && newReply!==oldReply) notifyReply(t,newReply);
+  if(newStatus!==oldStatus) notifyStatus(t,oldStatus,newStatus);
+
   // Écritures dans Google Sheets (l'une après l'autre pour éviter les conflits)
   await gs({action:"reply",id:id,reply:newReply});
   await gs({action:"update",id:id,status:newStatus});
   await gs({action:"assign",id:id,assignee:newAssignee});
-
-  // Notifications Discord (seulement si quelque chose a changé)
-  if(newReply && newReply!==oldReply) notifyReply(t,newReply);
-  if(newStatus!==oldStatus) notifyStatus(t,oldStatus,newStatus);
 
   // Logs
   if(newReply!==oldReply) await addLog("reply",id,"Réponse: "+newReply.slice(0,60)+(newReply.length>60?"...":""));
@@ -608,9 +623,9 @@ async function createTicket(){
   setTimeout(()=>n.classList.remove("show"),10000);
 
   // Envoi en arrière-plan : Sheets d'abord, puis log, puis Discord
+  sendToDiscord(t);
   await saveToSheets(t);
   await addLog("add",id,"Sujet: "+subject.slice(0,60)+" · Par: "+discord,discord);
-  sendToDiscord(t);
 }
 
 async function saveToSheets(t){
