@@ -204,10 +204,12 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 
 <script>
 // ====== CONFIG ======
+// ⚠️ Régénère tes webhooks Discord (ils ont été exposés) et colle les nouveaux ici.
 const WH="COLLE_ICI_LE_WEBHOOK_NOUVEAUX_TICKETS";
 const WH_REPLY="COLLE_ICI_LE_WEBHOOK_REPONSES";
 const GS="https://script.google.com/macros/s/AKfycbwgWT8lfraeGVgWDu5q2aDMQKauXQ3jhOpOaLtQEIw3-Q7_n-v2X8NbTT9PHldJ9v3-/exec";
-const ADMIN_PASSWORD="NoxStudio";
+// ⚠️ Change ce mot de passe (il reste visible dans le code de la page).
+const ADMIN_PASSWORD="CHANGE_MOI";
 
 let tickets=[],filter="all",adminFilter="all",selectedId=null,adminSelectedId=null,isAdmin=false,adminPseudo="";
 let lang="fr";
@@ -312,7 +314,7 @@ function nowStr(){
 // Appel au Google Apps Script (écritures)
 function gs(params){
   const qs=Object.keys(params).map(k=>k+"="+encodeURIComponent(params[k]==null?"":params[k])).join("&");
-  return fetch(GS+"?"+qs,{mode:"no-cors",credentials:"omit",referrerPolicy:"no-referrer",cache:"no-store"}).catch(e=>console.error("GS error",e));
+  return fetch(GS+"?"+qs,{mode:"no-cors"}).catch(e=>console.error("GS error",e));
 }
 function statusLabel(s){ return tr("status_"+s); }
 function statusIcon(s){return{open:"🔵",in_progress:"🟡",closed:"🟢"}[s]||""}
@@ -328,7 +330,7 @@ async function loadLogs(){
   const el=document.getElementById("logs-list");
   el.innerHTML='<div class="loading">'+tr("loading")+'</div>';
   try{
-    const r=await fetch(GS+"?action=getLogs",{credentials:"omit",referrerPolicy:"no-referrer",cache:"no-store"});
+    const r=await fetch(GS+"?action=getLogs");
     const data=await r.json();
     if(!Array.isArray(data)||!data.length){ el.innerHTML='<div class="empty">'+tr("no_log")+'</div>'; return; }
     const icons={reply:"💬",update:"🔄",assign:"👤",delete:"🗑️",add:"🎫"};
@@ -359,7 +361,7 @@ function switchAdminTab(tab){
 // ====== TICKETS ======
 async function loadTickets(){
   try{
-    const r=await fetch(GS+"?action=get",{credentials:"omit",referrerPolicy:"no-referrer",cache:"no-store"});
+    const r=await fetch(GS+"?action=get");
     const data=await r.json();
     if(!Array.isArray(data)) throw new Error("Réponse inattendue");
     tickets=data.filter(row=>row[0]).map(row=>({
