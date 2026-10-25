@@ -236,7 +236,7 @@ fr:{
   lbl_assignee:"👤 Assigné à",ph_assignee:"Pseudo du staff qui prend en charge",lbl_status:"🔄 Statut",
   opt_open:"🔵 Ouvert",opt_progress:"🟡 En cours",opt_closed:"🟢 Fermé",
   lbl_reply:"✏️ Réponse",ph_reply:"Écris ta réponse ici...",save:"💾 Enregistrer + Notifier",del:"🗑 Supprimer",
-  confirm_delete:"Supprimer ce ticket ?",
+  confirm_delete_btn:"⚠️ Confirmer la suppression",
   status_open:"Ouvert",status_in_progress:"En cours",status_closed:"Fermé",
   waiting:"En attente de réponse de l'équipe...",reply_current:"💬 Réponse actuelle",reply_team:"💬 Réponse de l'équipe",
   no_log:"Aucun log pour l'instant.",log_error:"Erreur de chargement.",
@@ -265,7 +265,7 @@ en:{
   lbl_assignee:"👤 Assigned to",ph_assignee:"Username of the staff member handling it",lbl_status:"🔄 Status",
   opt_open:"🔵 Open",opt_progress:"🟡 In progress",opt_closed:"🟢 Closed",
   lbl_reply:"✏️ Reply",ph_reply:"Write your reply here...",save:"💾 Save + Notify",del:"🗑 Delete",
-  confirm_delete:"Delete this ticket?",
+  confirm_delete_btn:"⚠️ Confirm deletion",
   status_open:"Open",status_in_progress:"In progress",status_closed:"Closed",
   waiting:"Waiting for the team's reply...",reply_current:"💬 Current reply",reply_team:"💬 Team reply",
   no_log:"No logs yet.",log_error:"Loading error.",
@@ -479,7 +479,7 @@ function selectAdminTicket(id){
     +'<textarea id="admin-reply-txt" placeholder="'+esc(tr("ph_reply"))+'">'+esc(t.reply)+'</textarea>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px">'
     +'<button class="btn sm primary" data-id="'+esc(t.id)+'" onclick="saveReply(this.dataset.id)">'+tr("save")+'</button>'
-    +'<button class="btn sm danger" data-id="'+esc(t.id)+'" onclick="deleteTicket(this.dataset.id)">'+tr("del")+'</button>'
+    +'<button class="btn sm danger" data-id="'+esc(t.id)+'" onclick="deleteTicket(this.dataset.id,this)">'+tr("del")+'</button>'
     +'</div></div></div>';
 }
 
@@ -554,8 +554,17 @@ async function notifyStatus(t,oldStatus,newStatus){
   });
 }
 
-async function deleteTicket(id){
-  if(!confirm(tr("confirm_delete"))) return;
+let deleteArmed=null,deleteTimer=null;
+async function deleteTicket(id,btn){
+  // Pas de confirm() : il est bloqué quand la page est intégrée dans Google Sites. On confirme avec un 2e clic.
+  if(deleteArmed!==id){
+    deleteArmed=id;
+    if(btn) btn.textContent=tr("confirm_delete_btn");
+    clearTimeout(deleteTimer);
+    deleteTimer=setTimeout(function(){ deleteArmed=null; if(btn&&btn.isConnected) btn.textContent=tr("del"); },5000);
+    return;
+  }
+  deleteArmed=null; clearTimeout(deleteTimer);
   const td=tickets.find(x=>x.id===id);
   tickets=tickets.filter(x=>x.id!==id);
   adminSelectedId=null;selectedId=null;
@@ -635,7 +644,7 @@ async function saveToSheets(t){
 async function sendToDiscord(t){
   const colors={Haute:15158332,Moyenne:16776960,Faible:3447003};
   await postWebhook(WH,{
-    content:"<@&1561778739484954626> — 🎫 Nouveau ticket à traiter !",
+    content:"<@&1496526102544515159> — 🎫 Nouveau ticket à traiter !",
     embeds:[{
       title:"🎫 Nouveau ticket — "+t.id,
       color:colors[t.prio]||3447003,
